@@ -15,6 +15,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
+        scaffoldBackgroundColor:
+            Colors.black, // ตั้งค่าสีพื้นหลังของ Scaffold เป็นสีดำ
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 0, 0, 0),
         ),

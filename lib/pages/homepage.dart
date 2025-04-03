@@ -26,26 +26,35 @@ class _HomePageState extends State<Homepage> {
             Center(
               child: SizedBox(
                 width: 300, // ปรับความกว้าง
-                height: 30, // ปรับความสูง
-                child: SearchBar(
-                  leading: const Icon(Icons.search, color: Colors.white),
-                  hintText: ('Search'),
-                  hintStyle: WidgetStateProperty.all(
-                    TextStyle(color: Colors.white),
-                  ),
-                  shadowColor: WidgetStateProperty.all(Colors.black),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
+                height: 50, // ปรับความสูง
+                child: TextField(
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ), // เปลี่ยนสีของข้อความที่ผู้ใช้พิมพ์
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search, color: Colors.white),
+                    hintText: 'Search',
+                    hintStyle: const TextStyle(
+                      color: Colors.white,
+                    ), // เปลี่ยนสี placeholder
+                    filled: true,
+                    fillColor: const Color(0xFF1C1C1E),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 15,
+                    ), // ปรับระยะห่างภายใน
                   ),
-                  padding: WidgetStateProperty.all(
-                    EdgeInsets.symmetric(horizontal: 16.0),
-                  ),
-                  backgroundColor: WidgetStateProperty.all(Color(0xFF1C1C1E)),
+                  // onChanged: (query) {
+                  //   print('Search query: $query');
+                  // },
+                  maxLines: 1,
+                  minLines: 1,
                 ),
               ),
             ),
+
             SizedBox(height: 20),
             profilecard(),
 
