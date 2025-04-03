@@ -13,7 +13,9 @@ class _Analyze extends State<Analyze> {
     return Scaffold(
       appBar: appBar(),
       backgroundColor: Colors.black,
-      body: Column(),
+      body: Column(
+        
+      ),
     );
   }
 

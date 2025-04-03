@@ -41,6 +41,7 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
   static const List<Widget> _widgetOptions = <Widget>[
     Homepage(), // หน้าหลัก
     FoodReminderPage(),
+    
   ];
 
   void _onItemTapped(int index) {
