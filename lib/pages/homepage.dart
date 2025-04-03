@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/pages/setting.dart';
+import 'package:myapp/pages/settingpage.dart';
+import 'package:myapp/pages/Todaypage.dart';
+import 'package:myapp/pages/Allpage.dart';
+import 'package:myapp/pages/Completedpage.dart';
+import 'package:myapp/pages/Schedulepage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -57,14 +61,44 @@ class _HomePageState extends State<Homepage> {
                 crossAxisSpacing: 15, // ระยะห่างแนวนอน
                 childAspectRatio: 1.2,
                 children: [
-                  categoryCard(Icons.event_available, "Today", Colors.blue),
-                  categoryCard(Icons.calendar_today, "Schedule", Colors.red),
-                  categoryCard(Icons.list_alt, "All", Colors.grey),
-                  categoryCard(Icons.check_circle, "Completed", Colors.green),
-                  categoryCard(Icons.event_available, "Today", Colors.blue),
-                  categoryCard(Icons.calendar_today, "Schedule", Colors.red),
-                  categoryCard(Icons.list_alt, "All", Colors.grey),
-                  categoryCard(Icons.check_circle, "Completed", Colors.green),
+                  categoryCard(Icons.event_available, "Today", Colors.blue, () {
+                    // Navigate to TodayPage
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TodayPage()),
+                    );
+                  }),
+                  categoryCard(
+                    Icons.calendar_today,
+                    "Schedule",
+                    Colors.red,
+                    () {
+                      // Navigate to SchedulePage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SchedulePage()),
+                      );
+                    },
+                  ),
+                  categoryCard(Icons.list_alt, "All", Colors.grey, () {
+                    // Navigate to AllPage
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Allpage()),
+                    );
+                  }),
+                  categoryCard(
+                    Icons.check_circle,
+                    "Completed",
+                    Colors.green,
+                    () {
+                      // Navigate to CompletedPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Completed()),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -100,25 +134,33 @@ class _HomePageState extends State<Homepage> {
     );
   }
 
-  Widget categoryCard(IconData icon, String title, Color color) {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.4,
-      decoration: BoxDecoration(
-        color: Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.2),
-            radius: 20,
-            child: Icon(icon, color: color, size: 24),
-          ),
-          SizedBox(height: 10),
-          Text(title, style: TextStyle(color: Colors.white70, fontSize: 16)),
-        ],
+  Widget categoryCard(
+    IconData icon,
+    String title,
+    Color color,
+    Function onPressed,
+  ) {
+    return GestureDetector(
+      onTap: () => onPressed(), // ใช้ onPressed ในการเรียกฟังก์ชัน
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.4,
+        decoration: BoxDecoration(
+          color: Color(0xFF1C1C1E),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              backgroundColor: color.withOpacity(0.2),
+              radius: 20,
+              child: Icon(icon, color: color, size: 24),
+            ),
+            SizedBox(height: 10),
+            Text(title, style: TextStyle(color: Colors.white70, fontSize: 16)),
+          ],
+        ),
       ),
     );
   }
@@ -179,4 +221,3 @@ class profilecard extends StatelessWidget {
     );
   }
 }
-//asd

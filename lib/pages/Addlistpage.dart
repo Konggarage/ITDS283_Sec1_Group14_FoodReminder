@@ -23,25 +23,32 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
         backgroundColor: Colors.black,
         title: const Text(
           'Food Reminder',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+          ), // ปรับขนาดของ title
         ),
-        centerTitle: true,
-        // ปรับปุ่ม Cancel ให้อยู่ซ้ายสุด
-        leading: Align(
-          alignment: Alignment.centerLeft, // จัดตำแหน่งปุ่ม Cancel ไปทางซ้าย
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0), // ระยะห่างจากซ้าย
-            child: TextButton(
-              onPressed: () {
-                reminderController.clear();
-                setState(() {
-                  selectedCategory = 'Vegetables';
-                  selectedDate = '2025-03-30';
-                  selectedTime = '10:00 AM';
-                  uploadedImage = '';
-                });
-              },
-              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 10.0),
+          child: TextButton(
+            onPressed: () {
+              reminderController.clear();
+              setState(() {
+                selectedCategory = 'Vegetables';
+                selectedDate = '2025-03-30';
+                selectedTime = '10:00 AM';
+                uploadedImage = '';
+              });
+            },
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero, // ทำให้ปุ่มไม่มี padding
+            ),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.red,
+                // fontSize: 18,
+              ), // ขนาดข้อความที่เหมาะสม
             ),
           ),
         ),
@@ -102,11 +109,15 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                       );
                     }).toList(),
                 style: TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Categories',
-                  labelStyle: TextStyle(color: Colors.white),
+                  labelStyle: const TextStyle(color: Colors.white),
                   filled: true,
-                  fillColor: Color.fromARGB(255, 65, 63, 63),
+                  fillColor: const Color.fromARGB(255, 65, 63, 63),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
                 ),
                 dropdownColor: const Color.fromARGB(255, 65, 63, 63),
               ),
@@ -114,6 +125,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
 
               // Date field
               TextField(
+                // controller: dateController, // ต้องตั้ง controller เพื่ออัปเดตค่า
                 readOnly: true,
                 onTap: () async {
                   DateTime? selectedDateTime = await showDatePicker(
@@ -167,6 +179,10 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   filled: true,
                   fillColor: Colors.grey[800],
                   hintText: selectedTime,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
                 ),
                 style: TextStyle(color: Colors.white),
               ),
@@ -186,7 +202,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     height: 100,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
                       color: Colors.grey[800],
                     ),
                     child:
