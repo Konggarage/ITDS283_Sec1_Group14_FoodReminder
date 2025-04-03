@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/pages/homepage.dart'; // อย่าลืม import หน้า Homepage
 import 'package:myapp/pages/Addlistpage.dart';
+import 'package:myapp/pages/analyze.dart';
 
 void main() {
   runApp(MyApp());

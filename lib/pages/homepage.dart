@@ -4,6 +4,7 @@ import 'package:myapp/pages/Todaypage.dart';
 import 'package:myapp/pages/Allpage.dart';
 import 'package:myapp/pages/Completedpage.dart';
 import 'package:myapp/pages/Schedulepage.dart';
+import 'package:myapp/pages/analyze.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -122,7 +123,10 @@ class _HomePageState extends State<Homepage> {
       backgroundColor: Colors.black,
       leading: IconButton(
         onPressed: () {
-          debugPrint("Graph icon pressed");
+          Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Analyze()),
+    );
         },
         icon: Icon(Icons.bar_chart, color: Colors.white),
       ),
