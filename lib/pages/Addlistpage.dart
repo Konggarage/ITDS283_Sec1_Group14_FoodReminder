@@ -104,7 +104,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                 style: TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Categories',
-                  labelStyle: const TextStyle(color: Colors.white),
+                  labelStyle: TextStyle(color: Colors.white),
                   filled: true,
                   fillColor: Color.fromARGB(255, 65, 63, 63),
                 ),

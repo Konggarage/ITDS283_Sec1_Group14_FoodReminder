@@ -4,7 +4,7 @@ import 'package:myapp/pages/setting.dart';
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
 
-  @overrideasd
+  @override
   State<Homepage> createState() => _HomePageState();
 }
 
