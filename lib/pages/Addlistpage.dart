@@ -10,7 +10,7 @@ class FoodReminderPage extends StatefulWidget {
 
 class _FoodReminderPageState extends State<FoodReminderPage> {
   final TextEditingController reminderController = TextEditingController();
-  String selectedCategory = 'Vegetableaaaas';
+  String selectedCategory = 'Vegetables';
   String selectedDate = '2025-03-30';
   String selectedTime = '10:00 AM';
   String uploadedImage = '';
