@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:myapp/main.dart';
+import 'package:myapp/Fooddatabase.dart';
+import 'package:myapp/pages/Todaypage.dart';
 
 class FoodReminderPage extends StatefulWidget {
   const FoodReminderPage({super.key});
@@ -10,10 +11,42 @@ class FoodReminderPage extends StatefulWidget {
 
 class _FoodReminderPageState extends State<FoodReminderPage> {
   final TextEditingController reminderController = TextEditingController();
-  String selectedCategory = 'Vegetables';
-  String selectedDate = '2025-03-30';
-  String selectedTime = '10:00 AM';
-  String uploadedImage = '';
+  String selectedCategory = 'Vegetables'; // เก็บหมวดหมู่ที่เลือก
+  String selectedDate = '2025-03-30'; // เก็บวันที่ที่เลือก
+  String selectedTime = '10:00 AM'; // เก็บเวลาที่เลือก
+  String uploadedImage = ''; // เก็บ path ของรูปภาพที่อัปโหลด
+
+  // ฟังก์ชันสำหรับเพิ่มข้อมูลลงในฐานข้อมูล
+  void _addReminder() async {
+    final reminder = reminderController.text;
+    final category = selectedCategory;
+    final date = selectedDate;
+    final time = selectedTime;
+    final imagePath = uploadedImage;
+
+    // สร้าง Map เพื่อเก็บข้อมูลที่จะบันทึก
+    Map<String, dynamic> row = {
+      'reminder': reminder,
+      'category': category,
+      'date': date,
+      'time': time,
+      'imagePath': imagePath,
+    };
+
+    // บันทึกข้อมูลลงในฐานข้อมูล
+    await DatabaseHelper.instance.insertReminder(row);
+
+    // ก่อนที่จะเรียกใช้ context ตรวจสอบว่า widget ยังคงติดตั้งอยู่หรือไม่
+    if (!mounted) return; // หาก widget ถูก dispose ไปแล้วจะไม่ทำอะไร
+
+    // ไปหน้า TodayPage
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TodayPage(),
+      ), // ไปยังหน้าที่จะแสดงรายการ
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +78,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
             ),
             child: const Text(
               'Cancel',
-              style: TextStyle(
-                color: Colors.red,
-                // fontSize: 18,
-              ), // ขนาดข้อความที่เหมาะสม
+              style: TextStyle(color: Colors.red), // ขนาดข้อความที่เหมาะสม
             ),
           ),
         ),
@@ -57,7 +87,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton(
               onPressed: () {
-                // Handle Done action here
+                _addReminder();
                 print("Done pressed");
               },
               child: const Text('Done', style: TextStyle(color: Colors.blue)),
@@ -80,6 +110,8 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   labelStyle: const TextStyle(color: Colors.white),
                   filled: true,
                   fillColor: Colors.grey[800],
+                  hintText: 'Enter your reminder',
+                  hintStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.white),
@@ -114,6 +146,8 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   labelStyle: const TextStyle(color: Colors.white),
                   filled: true,
                   fillColor: const Color.fromARGB(255, 65, 63, 63),
+                  hintText: 'Select a category', // แสดง placeholder
+                  hintStyle: const TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.white),
@@ -125,7 +159,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
 
               // Date field
               TextField(
-                // controller: dateController, // ต้องตั้ง controller เพื่ออัปเดตค่า
+                controller: TextEditingController(text: selectedDate),
                 readOnly: true,
                 onTap: () async {
                   DateTime? selectedDateTime = await showDatePicker(
@@ -146,7 +180,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   labelStyle: const TextStyle(color: Colors.white),
                   filled: true,
                   fillColor: Colors.grey[800],
-                  hintText: selectedDate,
+                  hintText: 'Pick a date',
                   hintStyle: const TextStyle(
                     color: Colors.white,
                   ), // เปลี่ยนสีของ placeholder
@@ -161,6 +195,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
 
               // Time field
               TextField(
+                controller: TextEditingController(text: selectedTime),
                 readOnly: true,
                 onTap: () async {
                   TimeOfDay? selectedTimeOfDay = await showTimePicker(
@@ -178,7 +213,8 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   labelStyle: const TextStyle(color: Colors.white),
                   filled: true,
                   fillColor: Colors.grey[800],
-                  hintText: selectedTime,
+                  hintText: selectedTime.isEmpty ? "Pick a Time" : selectedTime,
+                  hintStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Colors.white),

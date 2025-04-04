@@ -2,7 +2,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
+  static final DatabaseHelper instance =
+      DatabaseHelper._init(); // กำหนด instance ให้เรียกใช้จากที่ไหนก็ได้
 
   static Database? _database;
 
@@ -33,7 +34,8 @@ class DatabaseHelper {
       category $textType,
       date $textType,
       time $textType,
-      imagePath $textType
+      imagePath $textType,
+      status $textType
     )
     ''');
   }
@@ -48,5 +50,16 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> fetchReminders() async {
     final db = await instance.database;
     return await db.query('reminders');
+  }
+
+  // Update reminder status
+  Future<void> updateReminderStatus(int id, String status) async {
+    final db = await instance.database;
+    await db.update(
+      'reminders',
+      {'status': status}, // อัปเดตสถานะเป็น "completed"
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }
