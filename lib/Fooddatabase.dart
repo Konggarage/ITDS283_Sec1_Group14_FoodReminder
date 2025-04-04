@@ -43,6 +43,7 @@ class DatabaseHelper {
   // Insert new reminder
   Future<int> insertReminder(Map<String, dynamic> row) async {
     final db = await instance.database;
+    row['status'] = row['status'] ?? 'pending';
     return await db.insert('reminders', row);
   }
 
@@ -60,6 +61,33 @@ class DatabaseHelper {
       {'status': status}, // อัปเดตสถานะเป็น "completed"
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+// only com
+  Future<List<Map<String, dynamic>>> fetchCompletedReminders() async {
+    final db = await instance.database;
+    return await db.query(
+      'reminders',
+      where: 'status = ?',
+      whereArgs: ['completed'],
+    );
+  }
+  //all but no com
+  Future<List<Map<String, dynamic>>> fetchAllPendingReminders() async {
+  final db = await instance.database;
+  return await db.query(
+    'reminders',
+    where: 'status != ?',
+    whereArgs: ['completed'],
+  );
+}
+  Future<List<Map<String, dynamic>>> fetchRemindersByMonth(String month) async {
+    final db = await instance.database;
+    return await db.query(
+      'reminders',
+      where:
+          'strftime("%Y-%m", date) = ?', // ฟังก์ชัน strftime เพื่อกรองตามเดือน
+      whereArgs: [month],
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/pages/homepage.dart'; // อย่าลืม import หน้า Homepage
 import 'package:myapp/pages/Addlistpage.dart';
-import 'package:myapp/pages/analyze.dart';
+// import 'package:myapp/pages/analyze.dart';
+import 'package:myapp/pages/FoodRecommendationPage.dart';
 
 void main() {
   runApp(MyApp());
@@ -39,9 +40,9 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
+    FoodRecommendationPage(),
     Homepage(), // หน้าหลัก
     FoodReminderPage(),
-    
   ];
 
   void _onItemTapped(int index) {
@@ -59,6 +60,10 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,
         items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.food_bank, color: Colors.white),
+            label: 'Recommendation',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person, color: Colors.white),
             label: 'Home',

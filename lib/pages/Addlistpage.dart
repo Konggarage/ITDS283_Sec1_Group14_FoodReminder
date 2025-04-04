@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart';
-import 'package:myapp/pages/Todaypage.dart';
+// import 'package:myapp/pages/Todaypage.dart';
+import 'package:myapp/main.dart';
 
 class FoodReminderPage extends StatefulWidget {
   const FoodReminderPage({super.key});
@@ -31,21 +32,24 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
       'date': date,
       'time': time,
       'imagePath': imagePath,
+      'status': 'pending',
     };
 
     // บันทึกข้อมูลลงในฐานข้อมูล
     await DatabaseHelper.instance.insertReminder(row);
 
     // ก่อนที่จะเรียกใช้ context ตรวจสอบว่า widget ยังคงติดตั้งอยู่หรือไม่
-    if (!mounted) return; // หาก widget ถูก dispose ไปแล้วจะไม่ทำอะไร
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyApp(),
+        ), // ไปยังหน้าที่จะแสดงรายการ
+      );
+    }
+    // หาก widget ถูก dispose ไปแล้วจะไม่ทำอะไร
 
     // ไปหน้า TodayPage
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TodayPage(),
-      ), // ไปยังหน้าที่จะแสดงรายการ
-    );
   }
 
   @override

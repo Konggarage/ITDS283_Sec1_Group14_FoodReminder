@@ -94,7 +94,7 @@ class _HomePageState extends State<Homepage> {
                     // Navigate to AllPage
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => Allpage()),
+                      MaterialPageRoute(builder: (context) => AllPage()),
                     );
                   }),
                   categoryCard(
@@ -105,7 +105,9 @@ class _HomePageState extends State<Homepage> {
                       // Navigate to CompletedPage
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Completed()),
+                        MaterialPageRoute(
+                          builder: (context) => CompletedPage(),
+                        ),
                       );
                     },
                   ),
@@ -124,9 +126,9 @@ class _HomePageState extends State<Homepage> {
       leading: IconButton(
         onPressed: () {
           Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Analyze()),
-    );
+            context,
+            MaterialPageRoute(builder: (context) => Analyze()),
+          );
         },
         icon: Icon(Icons.bar_chart, color: Colors.white),
       ),
