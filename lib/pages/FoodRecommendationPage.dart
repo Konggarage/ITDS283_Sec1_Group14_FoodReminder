@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/pages/analyze.dart';
+import 'package:myapp/pages/settingpage.dart';
 
 class FoodRecommendationPage extends StatelessWidget {
   const FoodRecommendationPage({super.key});
@@ -8,19 +10,30 @@ class FoodRecommendationPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-       
         backgroundColor: Colors.black,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Analyze()),
+            );
+          },
+          icon: Icon(Icons.bar_chart, color: Colors.white),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
             onPressed: () {
               // Open settings page or perform any action
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Settingpage()),
+              );
             },
           ),
         ],
       ),
       body: Padding(
-        
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
