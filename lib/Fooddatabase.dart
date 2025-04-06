@@ -63,7 +63,8 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
-// only com
+
+  // only com
   Future<List<Map<String, dynamic>>> fetchCompletedReminders() async {
     final db = await instance.database;
     return await db.query(
@@ -72,15 +73,17 @@ class DatabaseHelper {
       whereArgs: ['completed'],
     );
   }
+
   //all but no com
   Future<List<Map<String, dynamic>>> fetchAllPendingReminders() async {
-  final db = await instance.database;
-  return await db.query(
-    'reminders',
-    where: 'status != ?',
-    whereArgs: ['completed'],
-  );
-}
+    final db = await instance.database;
+    return await db.query(
+      'reminders',
+      where: 'status != ?',
+      whereArgs: ['completed'],
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchRemindersByMonth(String month) async {
     final db = await instance.database;
     return await db.query(
@@ -88,6 +91,39 @@ class DatabaseHelper {
       where:
           'strftime("%Y-%m", date) = ?', // ฟังก์ชัน strftime เพื่อกรองตามเดือน
       whereArgs: [month],
+    );
+  }
+
+  // เพิ่มฟังก์ชัน deleteReminder ใน DatabaseHelper
+  Future<void> deleteReminder(int id) async {
+    final db = await instance.database;
+    await db.delete('reminders', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // เพิ่มฟังก์ชันนี้เพื่อดึงข้อมูลตาม ID
+  Future<Map<String, dynamic>> fetchReminderById(int id) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'reminders',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first;
+    } else {
+      throw Exception('Reminder with ID $id not found');
+    }
+  }
+
+  // ฟังก์ชันที่ใช้ในการอัปเดตข้อมูล reminder
+  Future<void> updateReminder(int id, Map<String, Object> row) async {
+    final db = await instance.database;
+    await db.update(
+      'reminders',
+      row, // ข้อมูลที่จะอัปเดต
+      where: 'id = ?', // ค้นหาด้วย ID
+      whereArgs: [id], // ใช้ ID ในการค้นหา
     );
   }
 }

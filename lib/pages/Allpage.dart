@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
+import 'package:myapp/pages/EditReminderPage.dart'; // อย่าลืมนำเข้า EditReminderPage
 
 class AllPage extends StatefulWidget {
   const AllPage({super.key});
@@ -20,25 +21,71 @@ class _AllPageState extends State<AllPage> {
 
   // ฟังก์ชันดึงข้อมูลทั้งหมดจากฐานข้อมูล
   Future<void> _fetchAllReminders() async {
-    final allReminders = await DatabaseHelper.instance.fetchReminders(); // ดึงข้อมูลทั้งหมดจากฐานข้อมูล
+    final allReminders =
+        await DatabaseHelper.instance
+            .fetchReminders(); // ดึงข้อมูลทั้งหมดจากฐานข้อมูล
 
-   setState(() {
-      reminders = allReminders.where((reminder) {
-        return reminder['status'] != 'completed'; // กรองเฉพาะ reminders ที่ไม่ได้เป็น completed
-      }).toList();
+    setState(() {
+      reminders =
+          allReminders.where((reminder) {
+            return reminder['status'] !=
+                'completed'; // กรองเฉพาะ reminders ที่ไม่ได้เป็น completed
+          }).toList();
     });
   }
 
   // ฟังก์ชันที่ใช้ในการเปลี่ยนสถานะไปที่ "completed"
   void _markAsCompleted(int id) async {
-    // อัปเดตสถานะในฐานข้อมูลให้เป็น completed
     await DatabaseHelper.instance.updateReminderStatus(id, 'completed');
-    
-    // ใส่ delay ก่อนที่จะรีเฟรชข้อมูล
-    Future.delayed(const Duration(seconds: 1), () {
-      // รีเฟรชข้อมูลหลังจาก delay
-      _fetchAllReminders();
-    });
+    _fetchAllReminders(); // รีเฟรชข้อมูลหลังจากเปลี่ยนสถานะ
+  }
+
+  // ฟังก์ชันลบ reminder
+  void _deleteReminder(int id) async {
+    await DatabaseHelper.instance.deleteReminder(id);
+    _fetchAllReminders(); // รีเฟรชข้อมูลทั้งหมด
+  }
+
+  // ฟังก์ชันแสดง dialog เพื่อยืนยันการลบ
+  void _showDeleteConfirmationDialog(int id) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ยืนยันการลบ'),
+          content: const Text('คุณแน่ใจว่าจะลบรายการนี้?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด dialog
+              },
+              child: const Text('ยกเลิก'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteReminder(id); // ลบ reminder
+                Navigator.of(context).pop(); // ปิด dialog
+              },
+              child: const Text('ยืนยัน'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ฟังก์ชันที่ใช้ในการไปหน้า EditReminderPage
+  void _navigateToEditReminderPage(int reminderId) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditReminderPage(reminderId: reminderId),
+      ),
+    );
+    // เมื่อกลับมาจากหน้า Edit จะเช็คค่าผลลัพธ์
+    if (result == true) {
+      _fetchAllReminders(); // รีเฟรชข้อมูลหลังจากการแก้ไข
+    }
   }
 
   @override
@@ -77,9 +124,14 @@ class _AllPageState extends State<AllPage> {
                     date: reminder['date'],
                     onCheckboxChanged: (isChecked) {
                       if (isChecked) {
-                        // ถ้าเลือกแล้ว เปลี่ยนสถานะเป็น completed
                         _markAsCompleted(reminder['id']);
                       }
+                    },
+                    onDelete: () {
+                      _showDeleteConfirmationDialog(reminder['id']);
+                    },
+                    onEdit: () {
+                      _navigateToEditReminderPage(reminder['id']);
                     },
                   );
                 },
@@ -92,12 +144,14 @@ class _AllPageState extends State<AllPage> {
   }
 }
 
-class ReminderItem extends StatefulWidget {
+class ReminderItem extends StatelessWidget {
   final int id;
   final String title;
   final String time;
   final String date;
   final ValueChanged<bool> onCheckboxChanged;
+  final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
   const ReminderItem({
     required this.id,
@@ -105,15 +159,10 @@ class ReminderItem extends StatefulWidget {
     required this.time,
     required this.date,
     required this.onCheckboxChanged,
+    required this.onDelete,
+    required this.onEdit,
     super.key,
   });
-
-  @override
-  State<ReminderItem> createState() => _ReminderItemState();
-}
-
-class _ReminderItemState extends State<ReminderItem> {
-  bool isChecked = false; // ใช้ตัวแปรนี้ในการเก็บสถานะของ checkbox
 
   @override
   Widget build(BuildContext context) {
@@ -123,19 +172,16 @@ class _ReminderItemState extends State<ReminderItem> {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Checkbox(
-          value: isChecked, // ใช้ isChecked ในการบอกสถานะของ checkbox
+          value: false, // เริ่มต้นสถานะยังไม่ได้เลือก
           onChanged: (bool? value) {
-            setState(() {
-              isChecked = value ?? false;
-            });
-            widget.onCheckboxChanged(
-              isChecked,
-            ); // ส่งค่าไปที่ฟังก์ชันที่เรียกใช้
+            onCheckboxChanged(
+              value ?? false,
+            ); // ส่งค่ากลับไปที่ onCheckboxChanged
           },
           activeColor: Colors.blue, // ปรับสีเมื่อเลือก
         ),
         title: Text(
-          widget.title,
+          title,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -143,8 +189,21 @@ class _ReminderItemState extends State<ReminderItem> {
           ),
         ),
         subtitle: Text(
-          '${widget.date} ${widget.time}',
+          '$date $time',
           style: const TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.white),
+              onPressed: onEdit, // เรียกฟังก์ชัน Edit
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.white),
+              onPressed: onDelete, // เรียกฟังก์ชันลบ
+            ),
+          ],
         ),
       ),
     );
