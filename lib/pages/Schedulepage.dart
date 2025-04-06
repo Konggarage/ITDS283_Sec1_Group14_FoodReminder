@@ -56,7 +56,7 @@ class _SchedulePageState extends State<SchedulePage> {
             ),
             const SizedBox(height: 16),
             // แทนที่ dropdown ด้วย ListView เลื่อนเดือน
-            Container(
+            SizedBox(
               height: 50,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,

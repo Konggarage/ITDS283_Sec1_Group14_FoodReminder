@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
+import 'package:intl/intl.dart';
 
 class AllPage extends StatefulWidget {
   const AllPage({super.key});
@@ -14,16 +15,29 @@ class _AllPageState extends State<AllPage> {
   @override
   void initState() {
     super.initState();
-    _fetchAllPendingReminders();
+    _fetchAllReminders();
   }
 
-  // ฟังก์ชันดึงข้อมูลทั้งหมดที่ไม่รวม "completed"
-  Future<void> _fetchAllPendingReminders() async {
-    final allReminders =
-        await DatabaseHelper.instance
-            .fetchAllPendingReminders(); // ดึงข้อมูลทั้งหมดที่ไม่ใช่ completed
-    setState(() {
-      reminders = allReminders;
+  // ฟังก์ชันดึงข้อมูลทั้งหมดจากฐานข้อมูล
+  Future<void> _fetchAllReminders() async {
+    final allReminders = await DatabaseHelper.instance.fetchReminders(); // ดึงข้อมูลทั้งหมดจากฐานข้อมูล
+
+   setState(() {
+      reminders = allReminders.where((reminder) {
+        return reminder['status'] != 'completed'; // กรองเฉพาะ reminders ที่ไม่ได้เป็น completed
+      }).toList();
+    });
+  }
+
+  // ฟังก์ชันที่ใช้ในการเปลี่ยนสถานะไปที่ "completed"
+  void _markAsCompleted(int id) async {
+    // อัปเดตสถานะในฐานข้อมูลให้เป็น completed
+    await DatabaseHelper.instance.updateReminderStatus(id, 'completed');
+    
+    // ใส่ delay ก่อนที่จะรีเฟรชข้อมูล
+    Future.delayed(const Duration(seconds: 1), () {
+      // รีเฟรชข้อมูลหลังจาก delay
+      _fetchAllReminders();
     });
   }
 
@@ -43,7 +57,7 @@ class _AllPageState extends State<AllPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'All Pending Reminders:',
+              'All Reminders:',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -57,9 +71,16 @@ class _AllPageState extends State<AllPage> {
                 itemBuilder: (context, index) {
                   final reminder = reminders[index];
                   return ReminderItem(
+                    id: reminder['id'],
                     title: reminder['reminder'],
                     time: reminder['time'],
                     date: reminder['date'],
+                    onCheckboxChanged: (isChecked) {
+                      if (isChecked) {
+                        // ถ้าเลือกแล้ว เปลี่ยนสถานะเป็น completed
+                        _markAsCompleted(reminder['id']);
+                      }
+                    },
                   );
                 },
               ),
@@ -71,17 +92,28 @@ class _AllPageState extends State<AllPage> {
   }
 }
 
-class ReminderItem extends StatelessWidget {
+class ReminderItem extends StatefulWidget {
+  final int id;
   final String title;
   final String time;
   final String date;
+  final ValueChanged<bool> onCheckboxChanged;
 
   const ReminderItem({
+    required this.id,
     required this.title,
     required this.time,
     required this.date,
+    required this.onCheckboxChanged,
     super.key,
   });
+
+  @override
+  State<ReminderItem> createState() => _ReminderItemState();
+}
+
+class _ReminderItemState extends State<ReminderItem> {
+  bool isChecked = false; // ใช้ตัวแปรนี้ในการเก็บสถานะของ checkbox
 
   @override
   Widget build(BuildContext context) {
@@ -90,8 +122,20 @@ class ReminderItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Checkbox(
+          value: isChecked, // ใช้ isChecked ในการบอกสถานะของ checkbox
+          onChanged: (bool? value) {
+            setState(() {
+              isChecked = value ?? false;
+            });
+            widget.onCheckboxChanged(
+              isChecked,
+            ); // ส่งค่าไปที่ฟังก์ชันที่เรียกใช้
+          },
+          activeColor: Colors.blue, // ปรับสีเมื่อเลือก
+        ),
         title: Text(
-          title,
+          widget.title,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -99,7 +143,7 @@ class ReminderItem extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          '${date} ${time}',
+          '${widget.date} ${widget.time}',
           style: const TextStyle(color: Colors.white70, fontSize: 16),
         ),
       ),

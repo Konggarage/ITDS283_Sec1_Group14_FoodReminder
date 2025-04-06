@@ -30,8 +30,9 @@ class _TodayPageState extends State<TodayPage> {
     setState(() {
       reminders =
           allReminders.where((reminder) {
-            return reminder['date'] ==
-                today; // เลือกแค่ reminders ที่ตรงกับวันที่วันนี้
+            return reminder['date'] == today &&
+                reminder['status'] !=
+                    'completed'; // เลือกแค่ reminders ที่ตรงกับวันที่วันนี้
           }).toList();
     });
   }
@@ -40,8 +41,11 @@ class _TodayPageState extends State<TodayPage> {
   void _markAsCompleted(int id) async {
     // อัปเดตสถานะในฐานข้อมูลให้เป็น completed
     await DatabaseHelper.instance.updateReminderStatus(id, 'completed');
+
     // รีเฟรชข้อมูลหลังจากเปลี่ยนสถานะ
-    _fetchTodayReminders();
+    Future.delayed(const Duration(seconds: 1), () {
+      _fetchTodayReminders();
+    });
   }
 
   @override

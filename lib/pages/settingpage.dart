@@ -96,7 +96,7 @@ class _SettingpageState extends State<Settingpage> {
           children: [
             const CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage('assets/Mike_Wazowski.png'),
+              backgroundImage: AssetImage('assets/chinjang.png'),
             ),
             const SizedBox(height: 24),
             TextField(
