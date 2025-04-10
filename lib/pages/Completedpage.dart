@@ -9,17 +9,25 @@ class CompletedPage extends StatefulWidget {
 
 class _CompletedPageState extends State<CompletedPage> {
   List<Map<String, dynamic>> completedReminders = [];
+
   @override
   void initState() {
     super.initState();
     _fetchCompletedReminders();
   }
 
+  // ฟังก์ชันดึงข้อมูล completed reminders
   Future<void> _fetchCompletedReminders() async {
     final completed = await DatabaseHelper.instance.fetchCompletedReminders();
     setState(() {
       completedReminders = completed;
     });
+  }
+
+  // ฟังก์ชันลบ reminder
+  void _deleteReminder(int id) async {
+    await DatabaseHelper.instance.deleteReminder(id); // ลบข้อมูลจากฐานข้อมูล
+    _fetchCompletedReminders(); // รีเฟรชข้อมูล
   }
 
   @override
@@ -52,9 +60,41 @@ class _CompletedPageState extends State<CompletedPage> {
                 itemBuilder: (context, index) {
                   final reminder = completedReminders[index];
                   return CompletedReminderItem(
+                    id: reminder['id'],
                     title: reminder['reminder'],
                     time: reminder['time'],
                     date: reminder['date'],
+                    onDelete: () {
+                      // แสดง Popup ยืนยันการลบ
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Confirm Delete'),
+                            content: const Text(
+                              'Are you sure you want to delete this reminder?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context); // ปิด Popup
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _deleteReminder(
+                                    reminder['id'],
+                                  ); // ลบ reminder
+                                  Navigator.pop(context); // ปิด Popup
+                                },
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
                   );
                 },
               ),
@@ -70,11 +110,15 @@ class CompletedReminderItem extends StatelessWidget {
   final String title;
   final String time;
   final String date;
+  final int id;
+  final VoidCallback onDelete;
 
   const CompletedReminderItem({
     required this.title,
     required this.time,
     required this.date,
+    required this.id,
+    required this.onDelete,
     super.key,
   });
 
@@ -96,6 +140,10 @@ class CompletedReminderItem extends StatelessWidget {
         subtitle: Text(
           '$date $time',
           style: const TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.white),
+          onPressed: onDelete, // เรียกใช้ฟังก์ชันลบ
         ),
       ),
     );

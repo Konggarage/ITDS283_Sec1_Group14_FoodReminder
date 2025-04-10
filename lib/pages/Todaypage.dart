@@ -36,7 +36,9 @@ class _TodayPageState extends State<TodayPage> {
   // ฟังก์ชันที่ใช้ในการเปลี่ยนสถานะไปที่ "completed"
   void _markAsCompleted(int id) async {
     await DatabaseHelper.instance.updateReminderStatus(id, 'completed');
-    _fetchTodayReminders(); // รีเฟรชข้อมูลหลังจากเปลี่ยนสถานะ
+    Future.delayed(const Duration(seconds: 3), () {
+      _fetchTodayReminders(); // รีเฟรชข้อมูลหลังจากเปลี่ยนสถานะ
+    });
   }
 
   // ฟังก์ชันลบ reminder
@@ -145,7 +147,7 @@ class _TodayPageState extends State<TodayPage> {
   }
 }
 
-class ReminderItem extends StatelessWidget {
+class ReminderItem extends StatefulWidget {
   final int id;
   final String title;
   final String time;
@@ -166,6 +168,13 @@ class ReminderItem extends StatelessWidget {
   });
 
   @override
+  State<ReminderItem> createState() => _ReminderItemState();
+}
+
+class _ReminderItemState extends State<ReminderItem> {
+  bool isChecked = false; // ใช้ตัวแปรนี้ในการเก็บสถานะของ checkbox
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       color: Colors.grey[800],
@@ -173,16 +182,19 @@ class ReminderItem extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Checkbox(
-          value: false, // เริ่มต้นสถานะยังไม่ได้เลือก
+          value: isChecked, // ใช้ isChecked ในการบอกสถานะของ checkbox
           onChanged: (bool? value) {
-            onCheckboxChanged(
-              value ?? false,
+            setState(() {
+              isChecked = value ?? false;
+            });
+            widget.onCheckboxChanged(
+              isChecked,
             ); // ส่งค่ากลับไปที่ onCheckboxChanged
           },
           activeColor: Colors.blue, // ปรับสีเมื่อเลือก
         ),
         title: Text(
-          title,
+          widget.title,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -190,7 +202,7 @@ class ReminderItem extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          '$date $time',
+          '${widget.date} ${widget.time}',
           style: const TextStyle(color: Colors.white70, fontSize: 16),
         ),
         trailing: Row(
@@ -198,11 +210,11 @@ class ReminderItem extends StatelessWidget {
           children: [
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.white),
-              onPressed: onEdit, // เรียกฟังก์ชัน Edit
+              onPressed: widget.onEdit, // เรียกฟังก์ชัน Edit
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.white),
-              onPressed: onDelete, // เรียกฟังก์ชันลบ
+              onPressed: widget.onDelete, // เรียกฟังก์ชันลบ
             ),
           ],
         ),

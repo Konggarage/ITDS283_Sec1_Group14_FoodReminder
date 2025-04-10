@@ -42,7 +42,7 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
   // หน้าในแต่ละหน้าของแอป
   static const List<Widget> _widgetOptions = <Widget>[
     FoodRecommendationPage(), // หน้าแนะนำ
-    Homepage(),
+    HomePage(),
     FoodReminderPage(), // หน้า Addlist
     Analyze(), // หน้า Analyze
     Settingpage(), // หน้า Settings

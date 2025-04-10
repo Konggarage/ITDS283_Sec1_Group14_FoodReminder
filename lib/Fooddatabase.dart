@@ -126,4 +126,13 @@ class DatabaseHelper {
       whereArgs: [id], // ใช้ ID ในการค้นหา
     );
   }
+
+  Future<List<Map<String, dynamic>>> searchReminders(String query) async {
+    final db = await instance.database;
+    return await db.query(
+      'reminders',
+      where: 'reminder LIKE ?',
+      whereArgs: ['%$query%'],
+    );
+  }
 }

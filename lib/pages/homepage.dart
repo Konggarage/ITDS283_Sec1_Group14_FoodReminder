@@ -1,121 +1,206 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/pages/settingpage.dart';
-import 'package:myapp/pages/Todaypage.dart';
-import 'package:myapp/pages/Allpage.dart';
-import 'package:myapp/pages/Completedpage.dart';
-import 'package:myapp/pages/Schedulepage.dart';
-import 'package:myapp/pages/analyze.dart';
+import 'package:myapp/Fooddatabase.dart'; // Import DatabaseHelper
+import 'package:intl/intl.dart';
+import 'package:myapp/pages/Todaypage.dart'; // Add imports for other pages
+import 'package:myapp/pages/Allpage.dart'; // Add imports for other pages
+import 'package:myapp/pages/Completedpage.dart'; // Add imports for other pages
+import 'package:myapp/pages/Schedulepage.dart'; // Add imports for other pages
+import 'package:myapp/pages/analyze.dart'; // Add imports for other pages
+import 'package:myapp/pages/settingpage.dart'; // Add setting page import
+import 'package:myapp/pages/Detaillpage.dart';
 
-class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<Homepage> createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<Homepage> {
+class _HomePageState extends State<HomePage> {
+  List<Map<String, dynamic>> allReminders = []; // All reminder list
+  List<Map<String, dynamic>> filteredReminders = []; // Filtered reminder list
+  String searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAllReminders();
+  }
+
+  // Fetch all reminders from the database
+  Future<void> _fetchAllReminders() async {
+    final reminders = await DatabaseHelper.instance.fetchReminders();
+    setState(() {
+      allReminders = reminders;
+      filteredReminders = reminders; // Initially show all reminders
+    });
+  }
+
+  // Filter results based on the search query
+  void _filterSearchResults(String query) {
+    setState(() {
+      searchQuery = query;
+      filteredReminders =
+          allReminders.where((reminder) {
+            final reminderTitle = reminder['reminder'].toLowerCase();
+            return reminderTitle.contains(
+              query.toLowerCase(),
+            ); // Search based on title
+          }).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
       backgroundColor: Colors.black,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // ✅ ต้องใช้ children: []
-            SizedBox(height: 10),
-            Center(
-              child: SizedBox(
-                width: 300, // ปรับความกว้าง
-                height: 50, // ปรับความสูง
-                child: TextField(
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ), // เปลี่ยนสีของข้อความที่ผู้ใช้พิมพ์
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search, color: Colors.white),
-                    hintText: 'Search',
-                    hintStyle: const TextStyle(
-                      color: Colors.white,
-                    ), // เปลี่ยนสี placeholder
-                    filled: true,
-                    fillColor: const Color(0xFF1C1C1E),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
+      body: Stack(
+        children: [
+          // Main UI elements
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                // SearchBar with no space below it
+                Container(
+                  padding: EdgeInsets.only(
+                    bottom: 0,
+                  ), // Adjust padding to reduce space
+                  child: TextField(
+                    onChanged: (query) {
+                      _filterSearchResults(query);
+                    },
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search, color: Colors.white),
+                      hintText: 'Search...',
+                      hintStyle: const TextStyle(color: Colors.white),
+                      filled: true,
+                      fillColor: const Color(
+                        0xFF2A2A2A,
+                      ), // Dark grey background
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 15),
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 15,
-                    ), // ปรับระยะห่างภายใน
                   ),
-                  // onChanged: (query) {
-                  //   print('Search query: $query');
-                  // },
-                  maxLines: 1,
-                  minLines: 1,
+                ),
+                SizedBox(height: 20),
+                // Profile Card
+                profileCard(),
+                SizedBox(height: 60),
+                // Category Cards
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: GridView.count(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 15,
+                    crossAxisSpacing: 15,
+                    childAspectRatio: 1.2,
+                    children: [
+                      categoryCard(
+                        Icons.event_available,
+                        "Today",
+                        Colors.blue,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TodayPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      categoryCard(
+                        Icons.calendar_today,
+                        "Schedule",
+                        Colors.red,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SchedulePage(),
+                            ),
+                          );
+                        },
+                      ),
+                      categoryCard(Icons.list_alt, "All", Colors.grey, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => AllPage()),
+                        );
+                      }),
+                      categoryCard(
+                        Icons.check_circle,
+                        "Completed",
+                        Colors.green,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CompletedPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // The search results dropdown
+          Positioned(
+            top: 70, // Adjust to position it below the search bar
+            left: 20,
+            right: 20,
+            child: Visibility(
+              visible:
+                  searchQuery
+                      .isNotEmpty, // Only show when search query is not empty
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(
+                    0.8,
+                  ), // Dark background for dropdown
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: filteredReminders.length,
+                  itemBuilder: (context, index) {
+                    final reminder = filteredReminders[index];
+                    return ListTile(
+                      title: Text(
+                        reminder['reminder'],
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onTap: () {
+                        final reminderId =
+                            filteredReminders[index]['id']; // ดึง ID ของ reminder
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => DetailPage(
+                                  reminderId: reminderId,
+                                ), // นำทางไปยัง DetailPage
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ),
-
-            SizedBox(height: 20),
-            profilecard(),
-
-            SizedBox(height: 60),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: GridView.count(
-                shrinkWrap: true,
-                physics:
-                    NeverScrollableScrollPhysics(), // ป้องกันการ Scroll ซ้อนกัน
-                crossAxisCount: 2, // 2 คอลัมน์
-                mainAxisSpacing: 15, // ระยะห่างแนวตั้ง
-                crossAxisSpacing: 15, // ระยะห่างแนวนอน
-                childAspectRatio: 1.2,
-                children: [
-                  categoryCard(Icons.event_available, "Today", Colors.blue, () {
-                    // Navigate to TodayPage
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TodayPage()),
-                    );
-                  }),
-                  categoryCard(
-                    Icons.calendar_today,
-                    "Schedule",
-                    Colors.red,
-                    () {
-                      // Navigate to SchedulePage
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SchedulePage()),
-                      );
-                    },
-                  ),
-                  categoryCard(Icons.list_alt, "All", Colors.grey, () {
-                    // Navigate to AllPage
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AllPage()),
-                    );
-                  }),
-                  categoryCard(
-                    Icons.check_circle,
-                    "Completed",
-                    Colors.green,
-                    () {
-                      // Navigate to CompletedPage
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CompletedPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -134,10 +219,7 @@ class _HomePageState extends State<Homepage> {
       ),
       actions: [
         IconButton(
-          icon: Icon(
-            Icons.settings,
-            color: Colors.white,
-          ), // ไอคอนด้านขวา (actions)
+          icon: Icon(Icons.settings, color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,
@@ -156,7 +238,7 @@ class _HomePageState extends State<Homepage> {
     Function onPressed,
   ) {
     return GestureDetector(
-      onTap: () => onPressed(), // ใช้ onPressed ในการเรียกฟังก์ชัน
+      onTap: () => onPressed(),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.4,
         decoration: BoxDecoration(
@@ -179,13 +261,8 @@ class _HomePageState extends State<Homepage> {
       ),
     );
   }
-}
 
-class profilecard extends StatelessWidget {
-  const profilecard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget profileCard() {
     return Center(
       child: Container(
         padding: EdgeInsets.all(16),
@@ -211,7 +288,7 @@ class profilecard extends StatelessWidget {
                   backgroundImage: AssetImage('assets/chinjang.png'),
                   radius: 60,
                 ),
-                SizedBox(width: 13), // เว้นระยะห่าง
+                SizedBox(width: 13),
                 Column(
                   children: [
                     Text(
@@ -221,14 +298,13 @@ class profilecard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10), // เว้นระยะห่าง
+                    SizedBox(height: 10),
                     Text("AKE ASOKE", style: TextStyle(fontSize: 15)),
                   ],
                 ),
               ],
             ),
-            SizedBox(width: 10),
-            SizedBox(height: 10), // เว้นระยะห่าง
+            SizedBox(height: 10),
             Text("(405) 555-0128", style: TextStyle(fontSize: 16)),
           ],
         ),
