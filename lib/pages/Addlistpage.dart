@@ -66,7 +66,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
           ), // ปรับขนาดของ title
         ),
         leading: Padding(
-          padding: const EdgeInsets.only(left: 10.0),
+          padding: const EdgeInsets.only(left: 8.0),
           child: TextButton(
             onPressed: () {
               reminderController.clear();
