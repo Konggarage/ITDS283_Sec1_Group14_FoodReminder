@@ -1,8 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:typed_data'; // เพิ่มการ import ไลบรารี
-import 'package:image_picker/image_picker.dart'; // นำเข้า image_picker
-import 'dart:io'; // สำหรับใช้ File ในการจัดการภาพ
+
 
 class DatabaseHelper {
   static final DatabaseHelper instance =

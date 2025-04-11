@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class Settingpage extends StatefulWidget {
   const Settingpage({super.key});
@@ -13,12 +16,42 @@ class _SettingpageState extends State<Settingpage> {
   final TextEditingController phoneController = TextEditingController();
   int phoneNumber = 0;
 
-  void handleSave() {
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final loadedName = prefs.getString('username') ?? '';
+    final loadedPhone = prefs.getString('phone') ?? '';
+
     setState(() {
-      // แปลงค่า text ใน phoneController เป็น int และเก็บใน phoneNumber
-      phoneNumber = int.tryParse(phoneController.text) ?? 0;
+      usernameController.text = loadedName;
+      phoneController.text = loadedPhone;
     });
-    print('Phone Number: $phoneNumber'); // จะได้ค่า phoneNumber เป็น int
+  }
+
+  void handleSave() async {
+    final prefs = await SharedPreferences.getInstance();
+    final username = usernameController.text;
+    final phone = phoneController.text;
+
+    await prefs.setString('username', username);
+    await prefs.setString('phone', phone);
+
+    setState(() {
+      phoneNumber = int.tryParse(phone) ?? 0;
+    });
+
+    print('✅ Saved: $username / $phone');
+    Navigator.pop(context, true);
+  }
+
+  void _saveProfileImagePath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profileImage', path);
   }
 
   void _showDeleteConfirmation() {
@@ -79,6 +112,8 @@ class _SettingpageState extends State<Settingpage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+
         title: const Text("Settings", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
@@ -94,9 +129,47 @@ class _SettingpageState extends State<Settingpage> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage('assets/chinjang.png'),
+            GestureDetector(
+              onTap: () async {
+                final picker = ImagePicker();
+                final pickedFile = await picker.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (pickedFile != null) {
+                  _saveProfileImagePath(pickedFile.path);
+                  setState(() {}); // รีโหลด CircleAvatar
+                }
+              },
+              child: FutureBuilder<SharedPreferences>(
+                future: SharedPreferences.getInstance(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    final prefs = snapshot.data!;
+                    final imagePath = prefs.getString('profileImage') ?? '';
+                    return CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.white,
+                      backgroundImage:
+                          imagePath.isNotEmpty
+                              ? FileImage(File(imagePath))
+                              : null,
+                      child:
+                          imagePath.isEmpty
+                              ? const Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Colors.grey,
+                              )
+                              : null,
+                    );
+                  } else {
+                    return const CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey,
+                    );
+                  }
+                },
+              ),
             ),
             const SizedBox(height: 24),
             TextField(
@@ -122,12 +195,12 @@ class _SettingpageState extends State<Settingpage> {
                   child: TextField(
                     controller: phoneController,
                     style: const TextStyle(color: Colors.white),
-                    keyboardType: TextInputType.number, // ป้อนแค่ตัวเลข
+                    keyboardType: TextInputType.number,
+                    maxLength: 10,
                     decoration: InputDecoration(
-                      hintText: '+66 xx-xxx-xxxx', // ✅ placeholder สีเทา
-                      hintStyle: const TextStyle(
-                        color: Colors.grey,
-                      ), // สีข้อความ placeholder
+                      counterText: '', // hides character counter
+                      hintText: '+66 xx-xxx-xxxx',
+                      hintStyle: const TextStyle(color: Colors.grey),
                       labelText: "Phone number",
                       labelStyle: const TextStyle(color: Colors.white),
                       suffixIcon: const Icon(Icons.edit, color: Colors.white),

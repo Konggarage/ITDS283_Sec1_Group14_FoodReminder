@@ -67,21 +67,21 @@ class _TodayPageState extends State<TodayPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('ยืนยันการลบ'),
-          content: const Text('คุณแน่ใจว่าจะลบรายการนี้?'),
+          title: const Text('Confirm Delete'),
+          content: const Text('Are you sure you want to delete this reminder?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // ปิด dialog
               },
-              child: const Text('ยกเลิก'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 _deleteReminder(id); // ลบ reminder
                 Navigator.of(context).pop(); // ปิด dialog
               },
-              child: const Text('ยืนยัน'),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -110,6 +110,7 @@ class _TodayPageState extends State<TodayPage> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

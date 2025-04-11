@@ -116,6 +116,7 @@ class CategoryDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(title, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

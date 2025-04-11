@@ -24,20 +24,27 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const ScaffoldExample(), // หน้าเริ่มต้น
+      home: const ScaffoldExample(initialIndex: 1), // หน้าเริ่มต้นเป็น HomePage
     );
   }
 }
 
 class ScaffoldExample extends StatefulWidget {
-  const ScaffoldExample({super.key});
+  final int initialIndex;
+  const ScaffoldExample({super.key, this.initialIndex = 0});
 
   @override
   State<ScaffoldExample> createState() => _ScaffoldExampleState();
 }
 
 class _ScaffoldExampleState extends State<ScaffoldExample> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   // หน้าในแต่ละหน้าของแอป
   static const List<Widget> _widgetOptions = <Widget>[
@@ -57,8 +64,9 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex), // แสดงหน้าแต่ละหน้า
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,

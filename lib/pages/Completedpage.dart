@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
-import 'package:myapp/pages/homepage.dart';
 
 class CompletedPage extends StatefulWidget {
   const CompletedPage({super.key});
@@ -59,6 +58,7 @@ class _CompletedPageState extends State<CompletedPage> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

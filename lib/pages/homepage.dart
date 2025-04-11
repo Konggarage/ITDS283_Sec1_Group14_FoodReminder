@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // Import DatabaseHelper
-import 'package:intl/intl.dart';
 import 'package:myapp/pages/Todaypage.dart'; // Add imports for other pages
 import 'package:myapp/pages/Allpage.dart'; // Add imports for other pages
 import 'package:myapp/pages/Completedpage.dart'; // Add imports for other pages
@@ -8,6 +7,9 @@ import 'package:myapp/pages/Schedulepage.dart'; // Add imports for other pages
 import 'package:myapp/pages/analyze.dart'; // Add imports for other pages
 import 'package:myapp/pages/settingpage.dart'; // Add setting page import
 import 'package:myapp/pages/Detaillpage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myapp/pages/loginpopup.dart';
+import 'dart:io';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,11 +22,56 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> allReminders = []; // All reminder list
   List<Map<String, dynamic>> filteredReminders = []; // Filtered reminder list
   String searchQuery = "";
+  String? phoneNumber;
+  String? profileImagePath;
+  String? profileName;
 
   @override
   void initState() {
     super.initState();
+    _checkIfLoggedIn();
+    _loadProfileData();
     _fetchAllReminders();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadProfileData(); // Refresh user data
+  }
+
+  void _checkIfLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (!isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => LoginPopup(),
+        );
+      });
+    }
+  }
+
+  void _loadProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final phone = prefs.getString('phone') ?? '(No Number)';
+    final name = prefs.getString('username') ?? 'Guest';
+    final image = prefs.getString('profileImage');
+    print('📷 Loaded profileImagePath: $image');
+
+    if (mounted) {
+      setState(() {
+        phoneNumber = phone;
+        profileName = name;
+        profileImagePath = image;
+      });
+      print(
+        '✅ Updated UI with: $profileName / $phoneNumber / $profileImagePath',
+      );
+    }
   }
 
   // Fetch all reminders from the database
@@ -33,24 +80,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       allReminders = reminders;
       filteredReminders = reminders; // Initially show all reminders
-    });
-  }
-
-  // ฟังก์ชันลบ reminder
-  void _deleteReminder(int id) async {
-    await DatabaseHelper.instance.deleteReminder(id);
-    // โหลดข้อมูลใหม่ทั้งหมดจาก database
-    final reminders = await DatabaseHelper.instance.fetchReminders();
-
-    setState(() {
-      allReminders = reminders;
-      // กรองข้อมูลใหม่อีกทีตาม query เดิม
-      filteredReminders =
-          allReminders.where((reminder) {
-            final reminderTitle = reminder['reminder'].toLowerCase();
-            final searchQueryLower = searchQuery.toLowerCase();
-            return reminderTitle.contains(searchQueryLower);
-          }).toList();
     });
   }
 
@@ -240,11 +269,12 @@ class _HomePageState extends State<HomePage> {
       actions: [
         IconButton(
           icon: Icon(Icons.settings, color: Colors.white),
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => Settingpage()),
             );
+            _loadProfileData(); // โหลดข้อมูลใหม่เมื่อกลับจาก Settings
           },
         ),
       ],
@@ -305,11 +335,24 @@ class _HomePageState extends State<HomePage> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage('assets/chinjang.png'),
                   radius: 60,
+                  backgroundColor: Colors.grey[300],
+                  backgroundImage:
+                      (profileImagePath != null && profileImagePath!.isNotEmpty)
+                          ? FileImage(File(profileImagePath!))
+                          : null,
+                  child:
+                      (profileImagePath == null || profileImagePath!.isEmpty)
+                          ? Icon(
+                            Icons.person,
+                            size: 60,
+                            color: Colors.grey[700],
+                          )
+                          : null,
                 ),
                 SizedBox(width: 13),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       "Welcome Back!",
@@ -319,13 +362,16 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    Text("AKE ASOKE", style: TextStyle(fontSize: 15)),
+                    Text(
+                      profileName ?? 'Guest',
+                      style: TextStyle(fontSize: 15),
+                    ),
                   ],
                 ),
               ],
             ),
             SizedBox(height: 10),
-            Text("(405) 555-0128", style: TextStyle(fontSize: 16)),
+            Text(phoneNumber ?? '', style: TextStyle(fontSize: 16)),
           ],
         ),
       ),

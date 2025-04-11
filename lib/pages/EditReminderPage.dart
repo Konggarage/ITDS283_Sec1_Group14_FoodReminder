@@ -45,8 +45,12 @@ class _EditReminderPageState extends State<EditReminderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Reminder"),
+        title: const Text(
+          "Edit Reminder",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -60,19 +64,28 @@ class _EditReminderPageState extends State<EditReminderPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Reminder Title'),
+              decoration: const InputDecoration(
+                labelText: 'Reminder Title',
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
               style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _timeController,
-              decoration: const InputDecoration(labelText: 'Time'),
+              decoration: const InputDecoration(
+                labelText: 'Time',
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
               style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _dateController,
-              decoration: const InputDecoration(labelText: 'Date'),
+              decoration: const InputDecoration(
+                labelText: 'Date',
+                labelStyle: TextStyle(color: Colors.grey),
+              ),
               style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 20),

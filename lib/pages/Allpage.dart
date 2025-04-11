@@ -62,21 +62,21 @@ class _AllPageState extends State<AllPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('ยืนยันการลบ'),
-          content: const Text('คุณแน่ใจว่าจะลบรายการนี้?'),
+          title: const Text('Confirm Delete'),
+          content: const Text('Are you sure you want to delete this reminder?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // ปิด dialog
               },
-              child: const Text('ยกเลิก'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 _deleteReminder(id); // ลบ reminder
                 Navigator.of(context).pop(); // ปิด dialog
               },
-              child: const Text('ยืนยัน'),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -99,17 +99,6 @@ class _AllPageState extends State<AllPage> {
   }
 
   // ฟังก์ชันที่จะไปหน้า DetailPage
-  void _navigateToDetailPage(int reminderId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => DetailPage(
-              reminderId: reminderId,
-            ), // ส่ง reminderId ไปที่ DetailPage
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +109,7 @@ class _AllPageState extends State<AllPage> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

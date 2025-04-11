@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart';
-import 'package:image_picker/image_picker.dart'; // เพิ่มการนำเข้า ImagePicker
 import 'dart:io'; // สำหรับการใช้งาน File
 
 class DetailPage extends StatefulWidget {
@@ -41,6 +40,7 @@ class _DetailPageState extends State<DetailPage> {
       appBar: AppBar(
         title: Text('Reminder Details', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: reminderData, // The future that loads data

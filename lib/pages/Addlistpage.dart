@@ -13,9 +13,9 @@ class FoodReminderPage extends StatefulWidget {
 
 class _FoodReminderPageState extends State<FoodReminderPage> {
   final TextEditingController reminderController = TextEditingController();
-  String selectedCategory = 'Vegetables';
-  String selectedDate = '2025-03-30';
-  String selectedTime = '10:00 AM';
+  String selectedCategory = '';
+  String selectedDate = '';
+  String selectedTime = '';
   String uploadedImage = ''; // เก็บ path ของรูปภาพที่อัปโหลด
 
   final ImagePicker _picker = ImagePicker(); // เพิ่มตัวแปร ImagePicker
@@ -76,14 +76,27 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
     final category = selectedCategory;
     final date = selectedDate;
     final time = selectedTime;
-    final imagePath = uploadedImage;
+
+    if (reminder.isEmpty || category.isEmpty || date.isEmpty || time.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please fill all required fields',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     Map<String, dynamic> row = {
       'reminder': reminder,
       'category': category,
       'date': date,
       'time': time,
-      'imagePath': imagePath,
+      'imagePath': uploadedImage,
       'status': 'pending',
     };
 
@@ -101,16 +114,19 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Food Reminder'),
+        title: const Text(
+          'Food Reminder',
+          style: TextStyle(color: Colors.white),
+        ),
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: TextButton(
             onPressed: () {
               reminderController.clear();
               setState(() {
-                selectedCategory = 'Vegetables';
-                selectedDate = '2025-03-30';
-                selectedTime = '10:00 AM';
+                selectedCategory = '';
+                selectedDate = '';
+                selectedTime = '';
                 uploadedImage = '';
               });
             },
@@ -137,7 +153,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Reminder text field
-              TextField(
+              TextFormField(
                 controller: reminderController,
                 style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
@@ -152,12 +168,19 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     borderSide: const BorderSide(color: Colors.white),
                   ),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a reminder';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
 
               // Category dropdown
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                value: selectedCategory.isNotEmpty ? selectedCategory : null,
+                hint: Text("Select a category"),
                 onChanged: (value) {
                   setState(() {
                     selectedCategory = value!;
@@ -194,7 +217,9 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
 
               // Date field
               TextField(
-                controller: TextEditingController(text: selectedDate),
+                controller: TextEditingController(
+                  text: selectedDate.isNotEmpty ? selectedDate : '',
+                ),
                 readOnly: true,
                 onTap: () async {
                   DateTime? selectedDateTime = await showDatePicker(
@@ -228,7 +253,9 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
 
               // Time field
               TextField(
-                controller: TextEditingController(text: selectedTime),
+                controller: TextEditingController(
+                  text: selectedTime.isNotEmpty ? selectedTime : '',
+                ),
                 readOnly: true,
                 onTap: () async {
                   TimeOfDay? selectedTimeOfDay = await showTimePicker(
