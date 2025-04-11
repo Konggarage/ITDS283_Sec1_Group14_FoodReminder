@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
+import 'package:myapp/pages/homepage.dart';
 
 class CompletedPage extends StatefulWidget {
   const CompletedPage({super.key});
@@ -9,6 +10,9 @@ class CompletedPage extends StatefulWidget {
 
 class _CompletedPageState extends State<CompletedPage> {
   List<Map<String, dynamic>> completedReminders = [];
+  List<Map<String, dynamic>> filteredReminders =
+      []; // เพิ่มตัวแปรสำหรับกรองข้อมูล
+  String searchQuery = ""; // เพิ่มตัวแปร searchQuery
 
   @override
   void initState() {
@@ -21,13 +25,29 @@ class _CompletedPageState extends State<CompletedPage> {
     final completed = await DatabaseHelper.instance.fetchCompletedReminders();
     setState(() {
       completedReminders = completed;
+      filteredReminders = completed; // แสดงข้อมูลทั้งหมดก่อน
     });
   }
 
   // ฟังก์ชันลบ reminder
   void _deleteReminder(int id) async {
     await DatabaseHelper.instance.deleteReminder(id); // ลบข้อมูลจากฐานข้อมูล
-    _fetchCompletedReminders(); // รีเฟรชข้อมูล
+    _fetchCompletedReminders(); // รีเฟรชข้อมูลใน filteredReminders หลังจากลบ
+    _filterSearchResults(searchQuery); // เรียกฟังก์ชันกรองข้อมูลใหม่
+  }
+
+  // ฟังก์ชันกรองข้อมูลจากการค้นหาของ user
+  void _filterSearchResults(String query) {
+    setState(() {
+      searchQuery = query;
+      filteredReminders =
+          completedReminders.where((reminder) {
+            final reminderTitle = reminder['reminder'].toLowerCase();
+            return reminderTitle.contains(
+              query.toLowerCase(),
+            ); // ค้นหาตามชื่อ reminder
+          }).toList();
+    });
   }
 
   @override
@@ -56,9 +76,9 @@ class _CompletedPageState extends State<CompletedPage> {
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: completedReminders.length,
+                itemCount: filteredReminders.length,
                 itemBuilder: (context, index) {
-                  final reminder = completedReminders[index];
+                  final reminder = filteredReminders[index];
                   return CompletedReminderItem(
                     id: reminder['id'],
                     title: reminder['reminder'],

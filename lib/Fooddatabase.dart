@@ -1,5 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:typed_data'; // เพิ่มการ import ไลบรารี
+import 'package:image_picker/image_picker.dart'; // นำเข้า image_picker
+import 'dart:io'; // สำหรับใช้ File ในการจัดการภาพ
 
 class DatabaseHelper {
   static final DatabaseHelper instance =
@@ -135,4 +138,19 @@ class DatabaseHelper {
       whereArgs: ['%$query%'],
     );
   }
+
+  Future<void> insertImage(Uint8List image) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.insert('images', {'image': image});
+  }
+
+  Future<Uint8List> getImage(int id) async {
+    final db = await DatabaseHelper.instance.database;
+    final result = await db.query('images', where: 'id = ?', whereArgs: [id]);
+    return result.isNotEmpty
+        ? result.first['image'] as Uint8List
+        : Uint8List(0);
+  }
+  
+  
 }

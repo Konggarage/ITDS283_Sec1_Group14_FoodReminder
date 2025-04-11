@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
 import 'package:intl/intl.dart';
 import 'package:myapp/pages/EditReminderPage.dart'; // เพิ่มการนำเข้า EditReminderPage
+import 'package:myapp/pages/Detaillpage.dart';
 
 class TodayPage extends StatefulWidget {
   const TodayPage({super.key});
@@ -47,7 +48,6 @@ class _TodayPageState extends State<TodayPage> {
     _fetchTodayReminders(); // รีเฟรชข้อมูลในหน้า Today
   }
 
-  // ฟังก์ชันที่ใช้ในการไปหน้า EditReminderPage
   void _navigateToEditReminderPage(int reminderId) async {
     final result = await Navigator.push(
       context,
@@ -89,6 +89,18 @@ class _TodayPageState extends State<TodayPage> {
     );
   }
 
+  void _navigateToDetailPage(int reminderId) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailPage(reminderId: reminderId),
+      ),
+    );
+    if (result == true) {
+      _fetchTodayReminders(); // รีเฟรชข้อมูลหลังจากการดูรายละเอียด
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,24 +130,29 @@ class _TodayPageState extends State<TodayPage> {
                 itemCount: reminders.length,
                 itemBuilder: (context, index) {
                   final reminder = reminders[index];
-                  return ReminderItem(
-                    id: reminder['id'],
-                    title: reminder['reminder'],
-                    time: reminder['time'],
-                    date: reminder['date'],
-                    onCheckboxChanged: (isChecked) {
-                      if (isChecked) {
-                        _markAsCompleted(reminder['id']);
-                      }
-                    },
-                    onDelete: () {
-                      _showDeleteConfirmationDialog(reminder['id']);
-                    },
-                    onEdit: () {
-                      _navigateToEditReminderPage(
+                  return GestureDetector(
+                    onTap: () {
+                      _navigateToDetailPage(
                         reminder['id'],
-                      ); // ไปหน้า Edit
+                      ); // เมื่อคลิกที่รายการ ไปที่หน้า DetailPage
                     },
+                    child: ReminderItem(
+                      id: reminder['id'],
+                      title: reminder['reminder'],
+                      time: reminder['time'],
+                      date: reminder['date'],
+                      onCheckboxChanged: (isChecked) {
+                        if (isChecked) {
+                          _markAsCompleted(reminder['id']);
+                        }
+                      },
+                      onDelete: () {
+                        _showDeleteConfirmationDialog(reminder['id']);
+                      },
+                      onEdit: () {
+                        _navigateToEditReminderPage(reminder['id']);
+                      },
+                    ),
                   );
                 },
               ),

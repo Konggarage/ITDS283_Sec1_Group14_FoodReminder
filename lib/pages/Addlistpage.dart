@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/Fooddatabase.dart';
-// import 'package:myapp/pages/Todaypage.dart';
+import 'package:image_picker/image_picker.dart'; // นำเข้า image_picker
+import 'dart:io'; // สำหรับจัดการกับไฟล์รูป
+import 'package:myapp/Fooddatabase.dart'; // เชื่อมต่อฐานข้อมูล
 import 'package:myapp/main.dart';
 
 class FoodReminderPage extends StatefulWidget {
@@ -12,10 +13,62 @@ class FoodReminderPage extends StatefulWidget {
 
 class _FoodReminderPageState extends State<FoodReminderPage> {
   final TextEditingController reminderController = TextEditingController();
-  String selectedCategory = 'Vegetables'; // เก็บหมวดหมู่ที่เลือก
-  String selectedDate = '2025-03-30'; // เก็บวันที่ที่เลือก
-  String selectedTime = '10:00 AM'; // เก็บเวลาที่เลือก
+  String selectedCategory = 'Vegetables';
+  String selectedDate = '2025-03-30';
+  String selectedTime = '10:00 AM';
   String uploadedImage = ''; // เก็บ path ของรูปภาพที่อัปโหลด
+
+  final ImagePicker _picker = ImagePicker(); // เพิ่มตัวแปร ImagePicker
+
+  // ฟังก์ชันเลือกภาพจากกล้องหรือแกลเลอรี
+  Future<void> _showImagePickerDialog() async {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: const Color(0xFF2E3047),
+            title: const Text(
+              "Select Image",
+              style: TextStyle(color: Colors.white),
+            ),
+            content: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.camera_alt, color: Colors.white),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    final picked = await _picker.pickImage(
+                      source: ImageSource.camera,
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        uploadedImage =
+                            picked.path; // เก็บ path ของรูปภาพที่ถ่าย
+                      });
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.photo, color: Colors.white),
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    final picked = await _picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        uploadedImage =
+                            picked.path; // เก็บ path ของรูปภาพที่เลือก
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+    );
+  }
 
   // ฟังก์ชันสำหรับเพิ่มข้อมูลลงในฐานข้อมูล
   void _addReminder() async {
@@ -25,7 +78,6 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
     final time = selectedTime;
     final imagePath = uploadedImage;
 
-    // สร้าง Map เพื่อเก็บข้อมูลที่จะบันทึก
     Map<String, dynamic> row = {
       'reminder': reminder,
       'category': category,
@@ -38,33 +90,18 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
     // บันทึกข้อมูลลงในฐานข้อมูล
     await DatabaseHelper.instance.insertReminder(row);
 
-    // ก่อนที่จะเรียกใช้ context ตรวจสอบว่า widget ยังคงติดตั้งอยู่หรือไม่
     if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MyApp(),
-        ), // ไปยังหน้าที่จะแสดงรายการ
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
     }
-    // หาก widget ถูก dispose ไปแล้วจะไม่ทำอะไร
-
-    // ไปหน้า TodayPage
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Background color
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
-          'Food Reminder',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-          ), // ปรับขนาดของ title
-        ),
+        title: const Text('Food Reminder'),
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: TextButton(
@@ -77,13 +114,8 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                 uploadedImage = '';
               });
             },
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero, // ทำให้ปุ่มไม่มี padding
-            ),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.red), // ขนาดข้อความที่เหมาะสม
-            ),
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+            child: const Text('Cancel', style: TextStyle(color: Colors.red)),
           ),
         ),
         actions: [
@@ -92,7 +124,6 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
             child: TextButton(
               onPressed: () {
                 _addReminder();
-                print("Done pressed");
               },
               child: const Text('Done', style: TextStyle(color: Colors.blue)),
             ),
@@ -150,7 +181,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   labelStyle: const TextStyle(color: Colors.white),
                   filled: true,
                   fillColor: const Color.fromARGB(255, 65, 63, 63),
-                  hintText: 'Select a category', // แสดง placeholder
+                  hintText: 'Select a category',
                   hintStyle: const TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -185,12 +216,10 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   filled: true,
                   fillColor: Colors.grey[800],
                   hintText: 'Pick a date',
-                  hintStyle: const TextStyle(
-                    color: Colors.white,
-                  ), // เปลี่ยนสีของ placeholder
+                  hintStyle: const TextStyle(color: Colors.white),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white), // กรอบสีขาว
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                 ),
                 style: TextStyle(color: Colors.white),
@@ -228,14 +257,10 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
               ),
               const SizedBox(height: 16),
 
-              // Upload image section
+              // ฟังก์ชันอัปโหลดรูป
               GestureDetector(
-                onTap: () {
-                  setState(() {
-                    uploadedImage =
-                        'assets/chinjang.png'; // Example path to image
-                  });
-                },
+                onTap:
+                    _showImagePickerDialog, // ใช้ฟังก์ชันเปิด dialog เลือกภาพ
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Container(
@@ -247,19 +272,22 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     ),
                     child:
                         uploadedImage.isEmpty
-                            ? const Center(child: Text('Upload images'))
-                            : Image.asset(
-                              uploadedImage,
+                            ? const Center(
+                              child: Icon(
+                                Icons.add_a_photo_outlined,
+                                color: Colors.white,
+                                size: 40, // ขนาดของไอคอน
+                              ),
+                            )
+                            : Image.file(
+                              File(uploadedImage),
                               fit: BoxFit.cover,
                               width: double.infinity,
                             ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // Add more space
-              const SizedBox(height: 24),
+              // const SizedBox(height: 16),
             ],
           ),
         ),

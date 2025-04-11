@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
 // import 'package:intl/intl.dart';
 import 'package:myapp/pages/EditReminderPage.dart'; // อย่าลืมนำเข้า EditReminderPage
+import 'package:myapp/pages/Detaillpage.dart';
 
 class AllPage extends StatefulWidget {
   const AllPage({super.key});
@@ -97,6 +98,19 @@ class _AllPageState extends State<AllPage> {
     }
   }
 
+  // ฟังก์ชันที่จะไปหน้า DetailPage
+  void _navigateToDetailPage(int reminderId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => DetailPage(
+              reminderId: reminderId,
+            ), // ส่ง reminderId ไปที่ DetailPage
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,7 +192,7 @@ class ReminderItem extends StatefulWidget {
 }
 
 class _ReminderItemState extends State<ReminderItem> {
-  bool isChecked = false; // สถานะของ checkbox
+  bool isChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -191,13 +205,11 @@ class _ReminderItemState extends State<ReminderItem> {
           value: isChecked, // ใช้ isChecked ในการบอกสถานะของ checkbox
           onChanged: (bool? value) {
             setState(() {
-              isChecked = value ?? false; // เปลี่ยนสถานะของ isChecked
+              isChecked = value ?? false;
             });
-            widget.onCheckboxChanged(
-              isChecked,
-            ); // ส่งค่าไปที่ onCheckboxChanged
+            widget.onCheckboxChanged(isChecked);
           },
-          activeColor: Colors.blue, // ปรับสีเมื่อเลือก
+          activeColor: Colors.blue,
         ),
         title: Text(
           widget.title,
@@ -216,14 +228,31 @@ class _ReminderItemState extends State<ReminderItem> {
           children: [
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.white),
-              onPressed: widget.onEdit, // เรียกฟังก์ชัน Edit
+              onPressed: widget.onEdit,
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.white),
-              onPressed: widget.onDelete, // เรียกฟังก์ชันลบ
+              onPressed: widget.onDelete,
             ),
           ],
         ),
+        onTap: () {
+          // เมื่อคลิกที่ ListTile จะไปที่หน้า DetailPage
+          _navigateToDetailPage(widget.id); // ไปหน้า DetailPage และส่ง id
+        },
+      ),
+    );
+  }
+
+  // ฟังก์ชันนี้จะนำทางไปหน้า DetailPage
+  void _navigateToDetailPage(int reminderId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => DetailPage(
+              reminderId: reminderId,
+            ), // ส่ง reminderId ไปที่ DetailPage
       ),
     );
   }

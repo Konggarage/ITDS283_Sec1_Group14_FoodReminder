@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart';
+import 'package:image_picker/image_picker.dart'; // เพิ่มการนำเข้า ImagePicker
+import 'dart:io'; // สำหรับการใช้งาน File
 
 class DetailPage extends StatefulWidget {
   final int reminderId;
@@ -37,7 +39,7 @@ class _DetailPageState extends State<DetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reminder Details'),
+        title: Text('Reminder Details', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
       ),
       body: FutureBuilder<Map<String, dynamic>>(
@@ -67,6 +69,21 @@ class _DetailPageState extends State<DetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // ตรวจสอบหากมี imagePath
+                      reminder['imagePath'] != ''
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(
+                              File(reminder['imagePath']),
+                              fit: BoxFit.cover,
+                              height: 200, // ความสูงของภาพ
+                              width: double.infinity, // ความกว้างเต็มหน้าจอ
+                            ),
+                          )
+                          : SizedBox.shrink(), // หากไม่มีรูปภาพจะแสดงเป็นค่าว่าง
+
+                      SizedBox(height: 20),
+
                       Text(
                         'Reminder: ${reminder['reminder']}',
                         style: TextStyle(

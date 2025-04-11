@@ -36,16 +36,36 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Filter results based on the search query
-  void _filterSearchResults(String query) {
+  // ฟังก์ชันลบ reminder
+  void _deleteReminder(int id) async {
+    await DatabaseHelper.instance.deleteReminder(id);
+    // โหลดข้อมูลใหม่ทั้งหมดจาก database
+    final reminders = await DatabaseHelper.instance.fetchReminders();
+
     setState(() {
-      searchQuery = query;
+      allReminders = reminders;
+      // กรองข้อมูลใหม่อีกทีตาม query เดิม
       filteredReminders =
           allReminders.where((reminder) {
             final reminderTitle = reminder['reminder'].toLowerCase();
-            return reminderTitle.contains(
-              query.toLowerCase(),
-            ); // Search based on title
+            final searchQueryLower = searchQuery.toLowerCase();
+            return reminderTitle.contains(searchQueryLower);
+          }).toList();
+    });
+  }
+
+  // ฟังก์ชันกรองผลลัพธ์ที่แสดงใน search
+  Future<void> _filterSearchResults(String query) async {
+    final reminders =
+        await DatabaseHelper.instance.fetchReminders(); // ดึงข้อมูลใหม่จาก DB
+    final searchQueryLower = query.toLowerCase();
+
+    setState(() {
+      searchQuery = query;
+      filteredReminders =
+          reminders.where((reminder) {
+            final reminderTitle = reminder['reminder'].toLowerCase();
+            return reminderTitle.contains(searchQueryLower);
           }).toList();
     });
   }
@@ -69,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                   ), // Adjust padding to reduce space
                   child: TextField(
                     onChanged: (query) {
-                      _filterSearchResults(query);
+                      _filterSearchResults(query); // ใช้เวอร์ชัน async นี้แทน
                     },
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
