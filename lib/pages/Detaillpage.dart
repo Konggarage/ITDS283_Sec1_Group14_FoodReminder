@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart';
-// import 'dart:io'; // สำหรับการใช้งาน File
+import 'package:intl/intl.dart';
 
 class DetailPage extends StatefulWidget {
   final int reminderId;
@@ -17,17 +17,13 @@ class _DetailPageState extends State<DetailPage> {
   @override
   void initState() {
     super.initState();
-    reminderData =
-        _fetchReminderData(); // Load the data when the page is initialized
+    reminderData = _fetchReminderData(); // Load the data when the page is initialized
   }
 
-  // Function to fetch the reminder data
   Future<Map<String, dynamic>> _fetchReminderData() async {
     final dbHelper = DatabaseHelper.instance;
     try {
-      final data = await dbHelper.fetchReminderById(
-        widget.reminderId,
-      ); // Fetch data from database
+      final data = await dbHelper.fetchReminderById(widget.reminderId);
       return data;
     } catch (e) {
       throw Exception('Error fetching reminder data: $e');
@@ -37,10 +33,7 @@ class _DetailPageState extends State<DetailPage> {
   Future<void> _markAsCompleted() async {
     final dbHelper = DatabaseHelper.instance;
     await dbHelper.updateReminderStatus(widget.reminderId, 'completed');
-    Navigator.pop(
-      context,
-      true,
-    ); // ส่งสัญญาณกลับไปให้ AllPage รู้ว่ามีการเปลี่ยนแปลง
+    Navigator.pop(context, true); // ส่งสัญญาณกลับไปให้ AllPage รู้ว่ามีการเปลี่ยนแปลง
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
@@ -67,36 +60,30 @@ class _DetailPageState extends State<DetailPage> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
-        future: reminderData, // The future that loads data
+        future: reminderData,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            ); // Show a loading indicator while the data is loading
+            return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            ); // Show error message if there's any
+            return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData) {
             return Center(child: Text('No data available'));
           } else {
             final reminder = snapshot.data!;
-            final reminderDateTime = DateTime.parse(
-              '${reminder['date']} ${reminder['time']}',
-            );
+            final dateString = '${reminder['date']} ${reminder['time']}';
+            final dateFormat = DateFormat('yyyy-MM-dd h:mm a');
+            final reminderDateTime = dateFormat.parse(dateString);
             final now = DateTime.now();
 
             String displayStatus = reminder['status'];
-            if (reminder['status'] != 'completed' &&
-                reminderDateTime.isBefore(now)) {
+            if (reminder['status'] != 'completed' && reminderDateTime.isBefore(now)) {
               displayStatus = 'overdue';
             }
 
             final daysDiff = reminderDateTime.difference(now).inDays;
-            final timeMessage =
-                displayStatus == 'overdue'
-                    ? 'Overdue by ${daysDiff.abs()} day${daysDiff.abs() == 1 ? '' : 's'}'
-                    : displayStatus == 'completed'
+            final timeMessage = displayStatus == 'overdue'
+                ? 'Overdue by ${daysDiff.abs()} day${daysDiff.abs() == 1 ? '' : 's'}'
+                : displayStatus == 'completed'
                     ? ''
                     : 'Due in $daysDiff day${daysDiff == 1 ? '' : 's'}';
 
@@ -116,12 +103,11 @@ class _DetailPageState extends State<DetailPage> {
                         displayStatus == 'completed'
                             ? Icons.check_circle
                             : displayStatus == 'overdue'
-                            ? Icons.warning_amber_rounded
-                            : Icons.schedule,
-                        color:
-                            displayStatus == 'completed'
-                                ? Colors.green
-                                : displayStatus == 'overdue'
+                                ? Icons.warning_amber_rounded
+                                : Icons.schedule,
+                        color: displayStatus == 'completed'
+                            ? Colors.green
+                            : displayStatus == 'overdue'
                                 ? Colors.red
                                 : Colors.orange,
                         size: 64,
@@ -158,10 +144,9 @@ class _DetailPageState extends State<DetailPage> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color:
-                              displayStatus == 'completed'
-                                  ? Colors.green
-                                  : displayStatus == 'overdue'
+                          color: displayStatus == 'completed'
+                              ? Colors.green
+                              : displayStatus == 'overdue'
                                   ? Colors.red
                                   : Colors.black54,
                         ),
