@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:myapp/main.dart'; // สำหรับ ScaffoldExample
+import 'package:myapp/Fooddatabase.dart';
 
 class Settingpage extends StatefulWidget {
   const Settingpage({super.key});
@@ -93,9 +95,26 @@ class _SettingpageState extends State<Settingpage> {
                         "Sure",
                         style: TextStyle(color: Colors.red),
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // TODO: ลบ account ที่นี่
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.remove('username');
+                        await prefs.remove('phone');
+                        await prefs.remove('profileImage');
+                        await prefs.setBool('isLoggedIn', false);
+                        await DatabaseHelper.instance
+                            .deleteAllReminders(); // ลบทุก reminder ในฐานข้อมูล
+
+                        Navigator.of(context).pop(); // ปิด dialog
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    const ScaffoldExample(initialIndex: 1),
+                          ),
+                          (route) => false,
+                        );
                       },
                     ),
                   ],
@@ -113,7 +132,6 @@ class _SettingpageState extends State<Settingpage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
-
         title: const Text("Settings", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
@@ -129,6 +147,15 @@ class _SettingpageState extends State<Settingpage> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
+            const Text(
+              "Account Settings",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 24),
             GestureDetector(
               onTap: () async {
                 final picker = ImagePicker();
@@ -230,7 +257,7 @@ class _SettingpageState extends State<Settingpage> {
             ),
             const SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(12),
@@ -254,16 +281,19 @@ class _SettingpageState extends State<Settingpage> {
                 ],
               ),
             ),
-            const Spacer(),
-            ElevatedButton.icon(
-              onPressed: _showDeleteConfirmation,
-              icon: const Icon(Icons.logout),
-              label: const Text("Delete account"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[400],
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _showDeleteConfirmation,
+                icon: const Icon(Icons.logout, color: Colors.white),
+                label: const Text("Delete Account"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[400],
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),

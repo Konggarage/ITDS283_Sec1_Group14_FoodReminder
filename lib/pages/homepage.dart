@@ -29,7 +29,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _checkIfLoggedIn();
     _loadProfileData();
     _fetchAllReminders();
   }
@@ -37,22 +36,23 @@ class _HomePageState extends State<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadProfileData(); // Refresh user data
-  }
 
-  void _checkIfLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-
-    if (!isLoggedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
+    Future.delayed(Duration.zero, () async {
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username');
+      if (username == null || username.isEmpty) {
+        final result = await showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (_) => LoginPopup(),
+          builder: (_) => const LoginPopup(),
         );
-      });
-    }
+
+        if (result == true) {
+          _loadProfileData();
+          _fetchAllReminders();
+        }
+      }
+    });
   }
 
   void _loadProfileData() async {

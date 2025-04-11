@@ -3,6 +3,7 @@ import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import Databa
 import 'package:intl/intl.dart';
 import 'package:myapp/pages/EditReminderPage.dart'; // เพิ่มการนำเข้า EditReminderPage
 import 'package:myapp/pages/Detaillpage.dart';
+import 'dart:async';
 
 class TodayPage extends StatefulWidget {
   const TodayPage({super.key});
@@ -35,12 +36,6 @@ class _TodayPageState extends State<TodayPage> {
   }
 
   // ฟังก์ชันที่ใช้ในการเปลี่ยนสถานะไปที่ "completed"
-  void _markAsCompleted(int id) async {
-    await DatabaseHelper.instance.updateReminderStatus(id, 'completed');
-    Future.delayed(const Duration(seconds: 3), () {
-      _fetchTodayReminders(); // รีเฟรชข้อมูลหลังจากเปลี่ยนสถานะ
-    });
-  }
 
   // ฟังก์ชันลบ reminder
   void _deleteReminder(int id) async {
@@ -101,6 +96,12 @@ class _TodayPageState extends State<TodayPage> {
     }
   }
 
+  void _toggleReminderStatus(int id, String currentStatus) async {
+    final newStatus = currentStatus == 'completed' ? 'pending' : 'completed';
+    await DatabaseHelper.instance.updateReminderStatus(id, newStatus);
+    _fetchTodayReminders();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,15 +145,15 @@ class _TodayPageState extends State<TodayPage> {
                       date: reminder['date'],
                       onCheckboxChanged: (isChecked) {
                         if (isChecked) {
-                          _markAsCompleted(reminder['id']);
+                          _toggleReminderStatus(
+                            reminder['id'],
+                            reminder['status'],
+                          );
                         }
                       },
-                      onDelete: () {
-                        _showDeleteConfirmationDialog(reminder['id']);
-                      },
-                      onEdit: () {
-                        _navigateToEditReminderPage(reminder['id']);
-                      },
+                      onEdit: () => _navigateToEditReminderPage(reminder['id']),
+                      onDelete:
+                          () => _showDeleteConfirmationDialog(reminder['id']),
                     ),
                   );
                 },
@@ -171,8 +172,8 @@ class ReminderItem extends StatefulWidget {
   final String time;
   final String date;
   final ValueChanged<bool> onCheckboxChanged;
-  final VoidCallback onDelete;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const ReminderItem({
     required this.id,
@@ -180,8 +181,8 @@ class ReminderItem extends StatefulWidget {
     required this.time,
     required this.date,
     required this.onCheckboxChanged,
-    required this.onDelete,
     required this.onEdit,
+    required this.onDelete,
     super.key,
   });
 
@@ -190,53 +191,115 @@ class ReminderItem extends StatefulWidget {
 }
 
 class _ReminderItemState extends State<ReminderItem> {
-  bool isChecked = false; // ใช้ตัวแปรนี้ในการเก็บสถานะของ checkbox
+  bool isChecked = false;
+  Timer? _completionTimer;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Checkbox(
-          value: isChecked, // ใช้ isChecked ในการบอกสถานะของ checkbox
-          onChanged: (bool? value) {
-            setState(() {
-              isChecked = value ?? false;
-            });
-            widget.onCheckboxChanged(
-              isChecked,
-            ); // ส่งค่ากลับไปที่ onCheckboxChanged
-          },
-          activeColor: Colors.blue, // ปรับสีเมื่อเลือก
-        ),
-        title: Text(
-          widget.title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(
-          '${widget.date} ${widget.time}',
-          style: const TextStyle(color: Colors.white70, fontSize: 16),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      color: Colors.grey[850],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      shadowColor: Colors.black54,
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.white),
-              onPressed: widget.onEdit, // เรียกฟังก์ชัน Edit
+            Transform.scale(
+              scale: 1.2,
+              child: Checkbox(
+                value: isChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    isChecked = value ?? false;
+                  });
+
+                  if (isChecked) {
+                    _completionTimer = Timer(const Duration(seconds: 3), () {
+                      widget.onCheckboxChanged(true);
+                    });
+                  } else {
+                    _completionTimer?.cancel();
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                activeColor: Colors.blueAccent,
+                checkColor: Colors.white,
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.white),
-              onPressed: widget.onDelete, // เรียกฟังก์ชันลบ
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.schedule,
+                        color: Colors.white38,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${widget.date} ${widget.time}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.grey[700],
+                  radius: 18,
+                  child: IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white, size: 16),
+                    onPressed: widget.onEdit,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                CircleAvatar(
+                  backgroundColor: Colors.grey[700],
+                  radius: 18,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    onPressed: widget.onDelete,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _completionTimer?.cancel();
+    super.dispose();
   }
 }

@@ -34,7 +34,7 @@ class _LoginPopupState extends State<LoginPopup> {
       prefs.setString('profileImage', imagePath);
       prefs.setBool('isLoggedIn', true);
 
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

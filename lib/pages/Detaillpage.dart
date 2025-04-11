@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart';
-import 'dart:io'; // สำหรับการใช้งาน File
+// import 'dart:io'; // สำหรับการใช้งาน File
 
 class DetailPage extends StatefulWidget {
   final int reminderId;
@@ -34,6 +34,30 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
+  Future<void> _markAsCompleted() async {
+    final dbHelper = DatabaseHelper.instance;
+    await dbHelper.updateReminderStatus(widget.reminderId, 'completed');
+    Navigator.pop(
+      context,
+      true,
+    ); // ส่งสัญญาณกลับไปให้ AllPage รู้ว่ามีการเปลี่ยนแปลง
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 18, color: Colors.black87),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,6 +81,25 @@ class _DetailPageState extends State<DetailPage> {
             return Center(child: Text('No data available'));
           } else {
             final reminder = snapshot.data!;
+            final reminderDateTime = DateTime.parse(
+              '${reminder['date']} ${reminder['time']}',
+            );
+            final now = DateTime.now();
+
+            String displayStatus = reminder['status'];
+            if (reminder['status'] != 'completed' &&
+                reminderDateTime.isBefore(now)) {
+              displayStatus = 'overdue';
+            }
+
+            final daysDiff = reminderDateTime.difference(now).inDays;
+            final timeMessage =
+                displayStatus == 'overdue'
+                    ? 'Overdue by ${daysDiff.abs()} day${daysDiff.abs() == 1 ? '' : 's'}'
+                    : displayStatus == 'completed'
+                    ? ''
+                    : 'Due in $daysDiff day${daysDiff == 1 ? '' : 's'}';
+
             return Padding(
               padding: const EdgeInsets.all(16.0),
               child: Card(
@@ -67,52 +110,94 @@ class _DetailPageState extends State<DetailPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // ตรวจสอบหากมี imagePath
-                      reminder['imagePath'] != ''
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(
-                              File(reminder['imagePath']),
-                              fit: BoxFit.cover,
-                              height: 200, // ความสูงของภาพ
-                              width: double.infinity, // ความกว้างเต็มหน้าจอ
-                            ),
-                          )
-                          : SizedBox.shrink(), // หากไม่มีรูปภาพจะแสดงเป็นค่าว่าง
-
-                      SizedBox(height: 20),
-
+                      Icon(
+                        displayStatus == 'completed'
+                            ? Icons.check_circle
+                            : displayStatus == 'overdue'
+                            ? Icons.warning_amber_rounded
+                            : Icons.schedule,
+                        color:
+                            displayStatus == 'completed'
+                                ? Colors.green
+                                : displayStatus == 'overdue'
+                                ? Colors.red
+                                : Colors.orange,
+                        size: 64,
+                      ),
+                      const SizedBox(height: 16),
                       Text(
-                        'Reminder: ${reminder['reminder']}',
-                        style: TextStyle(
-                          fontSize: 22,
+                        reminder['reminder'],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Colors.black87,
                         ),
                       ),
-                      Divider(color: Colors.grey),
-                      SizedBox(height: 10),
-                      Text(
+                      const Divider(height: 30, thickness: 1.2),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.category,
                         'Category: ${reminder['category']}',
-                        style: TextStyle(fontSize: 18, color: Colors.black54),
                       ),
-                      SizedBox(height: 10),
-                      Text(
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.calendar_today,
                         'Date: ${reminder['date']}',
-                        style: TextStyle(fontSize: 18, color: Colors.black54),
                       ),
-                      SizedBox(height: 10),
-                      Text(
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.access_time,
                         'Time: ${reminder['time']}',
-                        style: TextStyle(fontSize: 18, color: Colors.black54),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 20),
                       Text(
-                        'Status: ${reminder['status']}',
-                        style: TextStyle(fontSize: 18, color: Colors.black54),
+                        'Status: $displayStatus',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color:
+                              displayStatus == 'completed'
+                                  ? Colors.green
+                                  : displayStatus == 'overdue'
+                                  ? Colors.red
+                                  : Colors.black54,
+                        ),
                       ),
+                      if (timeMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6.0),
+                          child: Text(
+                            timeMessage,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black45,
+                            ),
+                          ),
+                        ),
+                      if (displayStatus != 'completed')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 24.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _markAsCompleted,
+                              icon: const Icon(Icons.check),
+                              label: const Text("Mark as Completed"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green[600],
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),

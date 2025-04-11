@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
+import 'package:myapp/pages/Detaillpage.dart'; // อย่าลืม import DetailPage
 
 class CompletedPage extends StatefulWidget {
   const CompletedPage({super.key});
@@ -47,6 +48,16 @@ class _CompletedPageState extends State<CompletedPage> {
             ); // ค้นหาตามชื่อ reminder
           }).toList();
     });
+  }
+
+  void _navigateToDetailPage(int reminderId) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailPage(reminderId: reminderId),
+      ),
+    );
+    _fetchCompletedReminders(); // รีโหลดหลังจากกลับมา
   }
 
   @override
@@ -115,6 +126,7 @@ class _CompletedPageState extends State<CompletedPage> {
                         },
                       );
                     },
+                    onTap: () => _navigateToDetailPage(reminder['id']),
                   );
                 },
               ),
@@ -132,6 +144,7 @@ class CompletedReminderItem extends StatelessWidget {
   final String date;
   final int id;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const CompletedReminderItem({
     required this.title,
@@ -139,6 +152,7 @@ class CompletedReminderItem extends StatelessWidget {
     required this.date,
     required this.id,
     required this.onDelete,
+    required this.onTap,
     super.key,
   });
 
@@ -148,6 +162,7 @@ class CompletedReminderItem extends StatelessWidget {
       color: Colors.grey[800],
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
+        onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         title: Text(
           title,

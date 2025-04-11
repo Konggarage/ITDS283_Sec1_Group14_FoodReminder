@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
-// import 'package:intl/intl.dart';
+import 'dart:async'; // เพิ่มการนำเข้า
 import 'package:myapp/pages/EditReminderPage.dart'; // อย่าลืมนำเข้า EditReminderPage
 import 'package:myapp/pages/Detaillpage.dart';
 
@@ -23,31 +23,36 @@ class _AllPageState extends State<AllPage> {
 
   // ฟังก์ชันดึงข้อมูลทั้งหมดจากฐานข้อมูล
   Future<void> _fetchAllReminders() async {
-    final allReminders =
-        await DatabaseHelper.instance
-            .fetchReminders(); // ดึงข้อมูลทั้งหมดจากฐานข้อมูล
+    final allReminders = await DatabaseHelper.instance.fetchReminders();
+    final today = DateTime.now();
 
     setState(() {
       reminders =
-          allReminders.where((reminder) {
-            return reminder['status'] !=
-                'completed'; // กรองเฉพาะ reminders ที่ไม่ได้เป็น completed
-          }).toList();
+          allReminders
+              .map((reminder) {
+                final reminderDate = DateTime.parse(reminder['date']);
+                final isOverdue =
+                    reminder['status'] != 'completed' &&
+                    reminderDate.isBefore(today);
+
+                final displayStatus =
+                    isOverdue ? 'overdue' : reminder['status'];
+
+                return {...reminder, 'status': displayStatus};
+              })
+              .where((reminder) => reminder['status'] != 'completed')
+              .toList();
     });
   }
 
   // ฟังก์ชันที่ใช้ในการเปลี่ยนสถานะไปที่ "completed"
   void _markAsCompleted(int id) async {
-    setState(() {
-      isChecked = true; // เปลี่ยนสถานะ checkbox เป็น checked
-    });
-
     await DatabaseHelper.instance.updateReminderStatus(id, 'completed');
-    await Future.delayed(const Duration(seconds: 3), () {});
+    Navigator.pop(
+      context,
+      true,
+    ); // ส่งสัญญาณกลับไปให้ AllPage รู้ว่ามีการเปลี่ยนแปลง
     _fetchAllReminders(); // รีเฟรชข้อมูลหลังจากเปลี่ยนสถานะ
-    setState(() {
-      isChecked = false; // เปลี่ยนสถานะ checkbox กลับเป็น unchecked
-    });
   }
 
   // ฟังก์ชันลบ reminder
@@ -99,6 +104,18 @@ class _AllPageState extends State<AllPage> {
   }
 
   // ฟังก์ชันที่จะไปหน้า DetailPage
+  void _navigateToDetailPage(int reminderId) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailPage(reminderId: reminderId),
+      ),
+    );
+
+    if (result == true) {
+      _fetchAllReminders(); // รีเฟรชข้อมูลเมื่อกลับมาจากหน้า detail แล้วมีการเปลี่ยนแปลง
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +152,8 @@ class _AllPageState extends State<AllPage> {
                     title: reminder['reminder'],
                     time: reminder['time'],
                     date: reminder['date'],
+                    status:
+                        reminder['status'], // Pass the status to ReminderItem
                     onCheckboxChanged: (isChecked) {
                       if (isChecked) {
                         _markAsCompleted(reminder['id']);
@@ -146,6 +165,7 @@ class _AllPageState extends State<AllPage> {
                     onEdit: () {
                       _navigateToEditReminderPage(reminder['id']);
                     },
+                    onTap: () => _navigateToDetailPage(reminder['id']),
                   );
                 },
               ),
@@ -162,18 +182,22 @@ class ReminderItem extends StatefulWidget {
   final String title;
   final String time;
   final String date;
+  final String status; // Add status parameter
   final ValueChanged<bool> onCheckboxChanged;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
+  final VoidCallback onTap; // Add onTap parameter
 
   const ReminderItem({
     required this.id,
     required this.title,
     required this.time,
     required this.date,
+    required this.status, // Add status parameter
     required this.onCheckboxChanged,
     required this.onDelete,
     required this.onEdit,
+    required this.onTap, // Add onTap parameter
     super.key,
   });
 
@@ -183,67 +207,115 @@ class ReminderItem extends StatefulWidget {
 
 class _ReminderItemState extends State<ReminderItem> {
   bool isChecked = false;
+  Timer? _completionTimer;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Checkbox(
-          value: isChecked, // ใช้ isChecked ในการบอกสถานะของ checkbox
-          onChanged: (bool? value) {
-            setState(() {
-              isChecked = value ?? false;
-            });
-            widget.onCheckboxChanged(isChecked);
-          },
-          activeColor: Colors.blue,
-        ),
-        title: Text(
-          widget.title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Card(
+        color: Colors.grey[800],
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Transform.scale(
+                scale: 1.2,
+                child: Checkbox(
+                  value: isChecked,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isChecked = value ?? false;
+                    });
+                    if (isChecked) {
+                      _completionTimer = Timer(const Duration(seconds: 3), () {
+                        widget.onCheckboxChanged(true);
+                      });
+                    } else {
+                      _completionTimer?.cancel();
+                    }
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  activeColor: Colors.blueAccent,
+                  checkColor: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${widget.date} ${widget.time}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
+                    // Display overdue status in red if applicable
+                    if (widget.status == 'overdue')
+                      Text(
+                        'Overdue',
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.grey[700],
+                    radius: 18,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      onPressed: widget.onEdit,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CircleAvatar(
+                    backgroundColor: Colors.grey[700],
+                    radius: 18,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      onPressed: widget.onDelete,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        subtitle: Text(
-          '${widget.date} ${widget.time}',
-          style: const TextStyle(color: Colors.white70, fontSize: 16),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.white),
-              onPressed: widget.onEdit,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.white),
-              onPressed: widget.onDelete,
-            ),
-          ],
-        ),
-        onTap: () {
-          // เมื่อคลิกที่ ListTile จะไปที่หน้า DetailPage
-          _navigateToDetailPage(widget.id); // ไปหน้า DetailPage และส่ง id
-        },
       ),
     );
   }
 
-  // ฟังก์ชันนี้จะนำทางไปหน้า DetailPage
-  void _navigateToDetailPage(int reminderId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => DetailPage(
-              reminderId: reminderId,
-            ), // ส่ง reminderId ไปที่ DetailPage
-      ),
-    );
+  @override
+  void dispose() {
+    _completionTimer?.cancel();
+    super.dispose();
   }
 }

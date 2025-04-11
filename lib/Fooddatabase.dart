@@ -2,7 +2,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:typed_data'; // เพิ่มการ import ไลบรารี
 
-
 class DatabaseHelper {
   static final DatabaseHelper instance =
       DatabaseHelper._init(); // กำหนด instance ให้เรียกใช้จากที่ไหนก็ได้
@@ -150,6 +149,9 @@ class DatabaseHelper {
         ? result.first['image'] as Uint8List
         : Uint8List(0);
   }
-  
-  
+
+  Future<void> deleteAllReminders() async {
+    final db = await database;
+    await db.delete('reminders'); // ลบทุกแถวในตาราง reminders
+  }
 }
