@@ -31,7 +31,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
     final updatedReminders =
         allReminders.map((reminder) {
-          final reminderDate = DateTime.parse(reminder['date']);
+          final reminderDate = DateTime.parse(reminder['expirationDate']);
           final isOverdue =
               reminder['status'] != 'completed' && reminderDate.isBefore(today);
 
@@ -185,18 +185,44 @@ class _SchedulePageState extends State<SchedulePage> {
                 itemCount: reminders.length,
                 itemBuilder: (context, index) {
                   final reminder = reminders[index];
+                  String displayStatus = reminder['status'];
+
+                  // คำนวณสถานะจาก Expiration Date
+                  DateTime expirationDateTime = DateTime.parse(
+                    reminder['expirationDate'],
+                  );
+                  final now = DateTime.now();
+
+                  if (reminder['status'] != 'completed') {
+                    if (expirationDateTime.isBefore(now)) {
+                      displayStatus =
+                          'overdue'; // ถ้า Expiration Date ก่อนวันที่ปัจจุบัน
+                    } else if (expirationDateTime.year == now.year &&
+                        expirationDateTime.month == now.month &&
+                        expirationDateTime.day == now.day) {
+                      displayStatus = 'due'; // ถ้า Expiration Date คือวันนี้
+                    } else {
+                      displayStatus =
+                          'pending'; // ถ้า Expiration Date ยังไม่ถึง
+                    }
+                  }
+
+                  // กำหนดสีและไอคอนตามสถานะ
                   Color statusColor;
                   IconData statusIcon;
 
-                  if (reminder['status'] == 'completed') {
+                  if (displayStatus == 'completed') {
                     statusColor = Colors.green;
-                    statusIcon = Icons.check;
-                  } else if (reminder['status'] == 'overdue') {
+                    statusIcon = Icons.check_circle;
+                  } else if (displayStatus == 'overdue') {
                     statusColor = Colors.red;
-                    statusIcon = Icons.warning;
+                    statusIcon = Icons.warning_amber_rounded;
+                  } else if (displayStatus == 'due') {
+                    statusColor = Colors.orange;
+                    statusIcon = Icons.access_time;
                   } else {
                     statusColor = Colors.grey;
-                    statusIcon = Icons.access_time;
+                    statusIcon = Icons.schedule;
                   }
 
                   return Card(

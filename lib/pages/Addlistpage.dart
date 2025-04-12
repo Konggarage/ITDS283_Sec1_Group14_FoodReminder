@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // นำเข้า image_picker
 import 'dart:io'; // สำหรับจัดการกับไฟล์รูป
 import 'package:myapp/Fooddatabase.dart'; // เชื่อมต่อฐานข้อมูล
-import 'package:myapp/main.dart';
+// import 'package:myapp/main.dart';
+import 'package:myapp/func/func.dart'; // นำเข้า func.dart ที่คำนวณวันหมดอายุ
+import 'package:intl/intl.dart'; // นำเข้า intl สำหรับการจัดการวันที่
 
 class FoodReminderPage extends StatefulWidget {
   const FoodReminderPage({super.key});
@@ -17,6 +19,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
   String selectedDate = '';
   String selectedTime = '';
   String uploadedImage = ''; // เก็บ path ของรูปภาพที่อัปโหลด
+  String expirationDate = ''; // เพิ่มตัวแปรเก็บวันหมดอายุที่คำนวณ
 
   final ImagePicker _picker = ImagePicker(); // เพิ่มตัวแปร ImagePicker
 
@@ -41,7 +44,8 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     final picked = await _picker.pickImage(
                       source: ImageSource.camera,
                     );
-                    if (picked != null) {
+                    if (picked != null && mounted) {
+                      // Check if widget is still mounted
                       setState(() {
                         uploadedImage =
                             picked.path; // เก็บ path ของรูปภาพที่ถ่าย
@@ -56,7 +60,8 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     final picked = await _picker.pickImage(
                       source: ImageSource.gallery,
                     );
-                    if (picked != null) {
+                    if (picked != null && mounted) {
+                      // Check if widget is still mounted
                       setState(() {
                         uploadedImage =
                             picked.path; // เก็บ path ของรูปภาพที่เลือก
@@ -91,6 +96,14 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
       return;
     }
 
+    // คำนวณวันหมดอายุ
+    String expirationDateCalculated = calculateExpirationDate(date, category);
+
+    // เก็บวันหมดอายุที่คำนวณแล้ว
+    setState(() {
+      expirationDate = expirationDateCalculated;
+    });
+
     Map<String, dynamic> row = {
       'reminder': reminder,
       'category': category,
@@ -98,13 +111,42 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
       'time': time,
       'imagePath': uploadedImage,
       'status': 'pending',
+      'expirationDate': expirationDate, // บันทึกวันหมดอายุ
     };
 
-    // บันทึกข้อมูลลงในฐานข้อมูล
-    await DatabaseHelper.instance.insertReminder(row);
+    // ตรวจสอบว่า DatabaseHelper ทำงานได้ไหม
+    try {
+      await DatabaseHelper.instance.insertReminder(
+        row,
+      ); // บันทึกข้อมูลลงฐานข้อมูล
+      print('Saved reminder: $row'); // พิมพ์ข้อมูลใน terminal เพื่อตรวจสอบ
 
-    if (mounted) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp()));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Reminder saved successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // รีเซ็ตฟอร์มหลังจากบันทึก
+      setState(() {
+        reminderController.clear();
+        selectedCategory = '';
+        selectedDate = '';
+        selectedTime = '';
+        uploadedImage = '';
+        expirationDate = ''; // รีเซ็ตวันหมดอายุ
+      });
+    } catch (e) {
+      print('Error saving reminder: $e'); // พิมพ์ข้อผิดพลาดใน terminal
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Failed to save reminder'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -128,6 +170,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                 selectedDate = '';
                 selectedTime = '';
                 uploadedImage = '';
+                expirationDate = ''; // รีเซ็ตวันหมดอายุ
               });
             },
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
@@ -168,12 +211,6 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     borderSide: const BorderSide(color: Colors.white),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a reminder';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 16),
 
@@ -184,14 +221,23 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                 onChanged: (value) {
                   setState(() {
                     selectedCategory = value!;
+                    if (selectedDate.isNotEmpty) {
+                      expirationDate = calculateExpirationDate(
+                        selectedDate,
+                        selectedCategory,
+                      );
+                    }
                   });
                 },
                 items:
                     <String>[
-                      'Vegetables',
-                      'Fruits',
-                      'Dairy',
-                      'Meat',
+                      'Vegetables & Fruits',
+                      'Meat & Fish',
+                      'Bread & Bakery Products',
+                      'Rice & Pasta',
+                      'Beverages',
+                      'Processed Foods',
+                      'Condiments & Sauces',
                     ].map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
@@ -232,6 +278,12 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     setState(() {
                       selectedDate =
                           selectedDateTime.toLocal().toString().split(' ')[0];
+                      if (selectedCategory.isNotEmpty) {
+                        expirationDate = calculateExpirationDate(
+                          selectedDate,
+                          selectedCategory,
+                        );
+                      }
                     });
                   }
                 },
@@ -284,6 +336,16 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
               ),
               const SizedBox(height: 16),
 
+              // แสดงวันหมดอายุ
+              if (expirationDate.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    'Expiration Date: $expirationDate',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+
               // ฟังก์ชันอัปโหลดรูป
               GestureDetector(
                 onTap:
@@ -314,7 +376,6 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   ),
                 ),
               ),
-              // const SizedBox(height: 16),
             ],
           ),
         ),

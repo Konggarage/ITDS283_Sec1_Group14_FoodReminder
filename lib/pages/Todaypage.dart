@@ -21,23 +21,23 @@ class _TodayPageState extends State<TodayPage> {
     _fetchTodayReminders();
   }
 
-  // ฟังก์ชันดึงข้อมูล reminders ที่หมดอายุวันนี้
+  // ฟังก์ชันดึงข้อมูล reminders ที่มี expiration date ตรงกับวันนี้
   Future<void> _fetchTodayReminders() async {
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final today = DateFormat(
+      'yyyy-MM-dd',
+    ).format(DateTime.now()); // วันที่ปัจจุบัน
     final allReminders = await DatabaseHelper.instance.fetchReminders();
 
     setState(() {
       reminders =
           allReminders.where((reminder) {
-            return reminder['date'] == today &&
-                reminder['status'] != 'completed';
+            // ตรวจสอบว่า expirationDate ตรงกับวันนี้
+            final expirationDate = reminder['expirationDate'];
+            return expirationDate == today && reminder['status'] != 'completed';
           }).toList();
     });
   }
 
-  // ฟังก์ชันที่ใช้ในการเปลี่ยนสถานะไปที่ "completed"
-
-  // ฟังก์ชันลบ reminder
   void _deleteReminder(int id) async {
     await DatabaseHelper.instance.deleteReminder(id);
     _fetchTodayReminders(); // รีเฟรชข้อมูลในหน้า Today
@@ -50,13 +50,11 @@ class _TodayPageState extends State<TodayPage> {
         builder: (context) => EditReminderPage(reminderId: reminderId),
       ),
     );
-    // เมื่อกลับมาจากหน้า Edit จะเช็คค่าผลลัพธ์
     if (result == true) {
       _fetchTodayReminders(); // รีเฟรชข้อมูลหลังจากการแก้ไข
     }
   }
 
-  // ฟังก์ชันแสดง dialog เพื่อยืนยันการลบ
   void _showDeleteConfirmationDialog(int id) {
     showDialog(
       context: context,
@@ -94,12 +92,6 @@ class _TodayPageState extends State<TodayPage> {
     if (result == true) {
       _fetchTodayReminders(); // รีเฟรชข้อมูลหลังจากการดูรายละเอียด
     }
-  }
-
-  void _toggleReminderStatus(int id, String currentStatus) async {
-    final newStatus = currentStatus == 'completed' ? 'pending' : 'completed';
-    await DatabaseHelper.instance.updateReminderStatus(id, newStatus);
-    _fetchTodayReminders();
   }
 
   @override
@@ -143,12 +135,15 @@ class _TodayPageState extends State<TodayPage> {
                       title: reminder['reminder'],
                       time: reminder['time'],
                       date: reminder['date'],
+                      expirationDate:
+                          reminder['expirationDate'], // เพิ่ม expirationDate
+                      status: reminder['status'],
                       onCheckboxChanged: (isChecked) {
-                        if (isChecked) {
-                          _toggleReminderStatus(
-                            reminder['id'],
-                            reminder['status'],
-                          );
+                        if (isChecked != null && isChecked) {
+                          // _toggleReminderStatus(
+                          //   reminder['id'],
+                          //   reminder['status'],
+                          // );
                         }
                       },
                       onEdit: () => _navigateToEditReminderPage(reminder['id']),
@@ -166,12 +161,14 @@ class _TodayPageState extends State<TodayPage> {
   }
 }
 
-class ReminderItem extends StatefulWidget {
+class ReminderItem extends StatelessWidget {
   final int id;
   final String title;
   final String time;
   final String date;
-  final ValueChanged<bool> onCheckboxChanged;
+  final String expirationDate;
+  final String status;
+  final ValueChanged<bool?> onCheckboxChanged; // รับค่าเป็น bool?
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -180,19 +177,13 @@ class ReminderItem extends StatefulWidget {
     required this.title,
     required this.time,
     required this.date,
+    required this.expirationDate,
+    required this.status,
     required this.onCheckboxChanged,
     required this.onEdit,
     required this.onDelete,
     super.key,
   });
-
-  @override
-  State<ReminderItem> createState() => _ReminderItemState();
-}
-
-class _ReminderItemState extends State<ReminderItem> {
-  bool isChecked = false;
-  Timer? _completionTimer;
 
   @override
   Widget build(BuildContext context) {
@@ -210,19 +201,10 @@ class _ReminderItemState extends State<ReminderItem> {
             Transform.scale(
               scale: 1.2,
               child: Checkbox(
-                value: isChecked,
+                value: false,
                 onChanged: (bool? value) {
-                  setState(() {
-                    isChecked = value ?? false;
-                  });
-
-                  if (isChecked) {
-                    _completionTimer = Timer(const Duration(seconds: 3), () {
-                      widget.onCheckboxChanged(true);
-                    });
-                  } else {
-                    _completionTimer?.cancel();
-                  }
+                  // เปลี่ยนเป็น bool?
+                  onCheckboxChanged(value); // ส่งค่า nullable bool
                 },
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -237,7 +219,7 @@ class _ReminderItemState extends State<ReminderItem> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.title,
+                    title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -249,15 +231,16 @@ class _ReminderItemState extends State<ReminderItem> {
                     children: [
                       const Icon(
                         Icons.schedule,
-                        color: Colors.white38,
+                        color: Colors.red, // Red icon for expiration date
                         size: 18,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 8),
                       Text(
-                        '${widget.date} ${widget.time}',
+                        'Expiration Date: $expirationDate',
                         style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
+                          color: Colors.red, // Red text for expiration date
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                     ],
@@ -273,7 +256,7 @@ class _ReminderItemState extends State<ReminderItem> {
                   radius: 18,
                   child: IconButton(
                     icon: const Icon(Icons.edit, color: Colors.white, size: 16),
-                    onPressed: widget.onEdit,
+                    onPressed: onEdit,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -286,7 +269,7 @@ class _ReminderItemState extends State<ReminderItem> {
                       color: Colors.white,
                       size: 16,
                     ),
-                    onPressed: widget.onDelete,
+                    onPressed: onDelete,
                   ),
                 ),
               ],
@@ -295,11 +278,5 @@ class _ReminderItemState extends State<ReminderItem> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _completionTimer?.cancel();
-    super.dispose();
   }
 }

@@ -3,6 +3,7 @@ import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import Databa
 import 'dart:async'; // เพิ่มการนำเข้า
 import 'package:myapp/pages/EditReminderPage.dart'; // อย่าลืมนำเข้า EditReminderPage
 import 'package:myapp/pages/Detaillpage.dart';
+import 'package:intl/intl.dart'; // เพิ่มการนำเข้า intl
 
 class AllPage extends StatefulWidget {
   const AllPage({super.key});
@@ -23,17 +24,23 @@ class _AllPageState extends State<AllPage> {
 
   // ฟังก์ชันดึงข้อมูลทั้งหมดจากฐานข้อมูล
   Future<void> _fetchAllReminders() async {
-    final allReminders = await DatabaseHelper.instance.fetchReminders();
+    final allReminders =
+        await DatabaseHelper.instance.fetchAllPendingReminders();
+    print('All Reminders: $allReminders'); // พิมพ์ข้อมูลที่ดึงมาเพื่อตรวจสอบ
+
     final today = DateTime.now();
 
     setState(() {
       reminders =
           allReminders
               .map((reminder) {
-                final reminderDate = DateTime.parse(reminder['date']);
+                // final reminderDate = DateTime.parse(reminder['date']);
+                final expirationDate = DateTime.parse(
+                  reminder['expirationDate'],
+                );
                 final isOverdue =
-                    reminder['status'] != 'completed' &&
-                    reminderDate.isBefore(today);
+                    expirationDate.isBefore(today) &&
+                    reminder['status'] != 'completed';
 
                 final displayStatus =
                     isOverdue ? 'overdue' : reminder['status'];
@@ -152,6 +159,8 @@ class _AllPageState extends State<AllPage> {
                     title: reminder['reminder'],
                     time: reminder['time'],
                     date: reminder['date'],
+                    expirationDate:
+                        reminder['expirationDate'], // ส่ง expirationDate
                     status:
                         reminder['status'], // Pass the status to ReminderItem
                     onCheckboxChanged: (isChecked) {
@@ -182,6 +191,7 @@ class ReminderItem extends StatefulWidget {
   final String title;
   final String time;
   final String date;
+  final String expirationDate; // เพิ่ม expirationDate parameter
   final String status; // Add status parameter
   final ValueChanged<bool> onCheckboxChanged;
   final VoidCallback onDelete;
@@ -193,6 +203,7 @@ class ReminderItem extends StatefulWidget {
     required this.title,
     required this.time,
     required this.date,
+    required this.expirationDate, // รับ expirationDate
     required this.status, // Add status parameter
     required this.onCheckboxChanged,
     required this.onDelete,
@@ -256,12 +267,20 @@ class _ReminderItemState extends State<ReminderItem> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      '${widget.date} ${widget.time}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                      ),
+                    // เพิ่มไอคอนและข้อความ Expiration Date
+                    Row(
+                      children: [
+                        Icon(Icons.schedule, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Expiration Date: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(widget.expirationDate))}',
+                          style: const TextStyle(
+                            color: Colors.red, // สีแดงเพื่อเน้น
+                            fontWeight: FontWeight.bold, // ทำให้ตัวหนา
+                            fontSize: 15, // ขนาดฟอนต์ใหญ่ขึ้น
+                          ),
+                        ),
+                      ],
                     ),
                     // Display overdue status in red if applicable
                     if (widget.status == 'overdue')
