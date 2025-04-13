@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class LoginPopup extends StatefulWidget {
   const LoginPopup({super.key});
@@ -20,8 +22,14 @@ class _LoginPopupState extends State<LoginPopup> {
   Future<void> _pickImage() async {
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null && mounted) {
+      final directory = await getApplicationDocumentsDirectory();
+      final name = p.basename(picked.path);
+      final savedImage = await File(
+        picked.path,
+      ).copy('${directory.path}/$name');
+
       setState(() {
-        imagePath = picked.path;
+        imagePath = savedImage.path;
       });
     }
   }

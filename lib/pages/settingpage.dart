@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:myapp/main.dart'; // สำหรับ ScaffoldExample
 import 'package:myapp/Fooddatabase.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class Settingpage extends StatefulWidget {
   const Settingpage({super.key});
@@ -28,10 +30,12 @@ class _SettingpageState extends State<Settingpage> {
     final prefs = await SharedPreferences.getInstance();
     final loadedName = prefs.getString('username') ?? '';
     final loadedPhone = prefs.getString('phone') ?? '';
+    final reminder = prefs.getBool('expirationAlertsEnabled') ?? true;
 
     setState(() {
       usernameController.text = loadedName;
       phoneController.text = loadedPhone;
+      isReminderOn = reminder;
     });
   }
 
@@ -163,7 +167,13 @@ class _SettingpageState extends State<Settingpage> {
                   source: ImageSource.gallery,
                 );
                 if (pickedFile != null) {
-                  _saveProfileImagePath(pickedFile.path);
+                  final directory = await getApplicationDocumentsDirectory();
+                  final name = p.basename(pickedFile.path);
+                  final savedImage = await File(
+                    pickedFile.path,
+                  ).copy('${directory.path}/$name');
+
+                  _saveProfileImagePath(savedImage.path);
                   setState(() {}); // รีโหลด CircleAvatar
                 }
               },
@@ -177,11 +187,11 @@ class _SettingpageState extends State<Settingpage> {
                       radius: 50,
                       backgroundColor: Colors.white,
                       backgroundImage:
-                          imagePath.isNotEmpty
+                          imagePath.isNotEmpty && File(imagePath).existsSync()
                               ? FileImage(File(imagePath))
                               : null,
                       child:
-                          imagePath.isEmpty
+                          imagePath.isEmpty || !File(imagePath).existsSync()
                               ? const Icon(
                                 Icons.person,
                                 size: 50,
@@ -266,12 +276,14 @@ class _SettingpageState extends State<Settingpage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "Reminder Message",
+                    "Enable Expiration Alerts",
                     style: TextStyle(color: Colors.white),
                   ),
                   Switch(
                     value: isReminderOn,
-                    onChanged: (val) {
+                    onChanged: (val) async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('expirationAlertsEnabled', val);
                       setState(() {
                         isReminderOn = val;
                       });

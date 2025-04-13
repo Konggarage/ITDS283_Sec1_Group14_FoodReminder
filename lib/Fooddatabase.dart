@@ -45,12 +45,28 @@ class DatabaseHelper {
   // Insert new reminder
   Future<int> insertReminder(Map<String, dynamic> row) async {
     final db = await instance.database;
+
+    // Ensure all required fields are non-null strings
+    row['reminder'] = row['reminder'] ?? '';
+    row['category'] = row['category'] ?? '';
+    row['date'] = row['date'] ?? '';
+    row['time'] = row['time'] ?? '';
+    row['imagePath'] = row['imagePath'] ?? '';
     row['status'] = row['status'] ?? 'pending';
-    row['expirationDate'] =
-        calculateExpirationDate(
-          row['category'],
-          DateTime.parse(row['date']),
-        ).toIso8601String(); // Save expirationDate
+
+    // Only calculate expirationDate if 'date' and 'category' are valid
+    if ((row['category'] as String).isNotEmpty &&
+        (row['date'] as String).isNotEmpty) {
+      row['expirationDate'] =
+          calculateExpirationDate(
+            row['category'],
+            DateTime.tryParse(row['date']) ?? DateTime.now(),
+          ).toIso8601String();
+    } else {
+      row['expirationDate'] =
+          DateTime.now().add(Duration(days: 3)).toIso8601String();
+    }
+
     return await db.insert('reminders', row);
   }
 
@@ -167,6 +183,16 @@ class DatabaseHelper {
     return result.isNotEmpty
         ? result.first['image'] as Uint8List
         : Uint8List(0);
+  }
+
+  Future<void> updateImage(int reminderId, Uint8List? image) async {
+    final db = await instance.database;
+    await db.update(
+      'reminders', // ชื่อตารางที่เก็บข้อมูล reminder
+      {'image': image}, // อัปเดตข้อมูลในคอลัมน์ 'image'
+      where: 'id = ?',
+      whereArgs: [reminderId], // ใช้ 'id' เพื่อระบุแถวที่ต้องการอัปเดต
+    );
   }
 
   // Delete all reminders

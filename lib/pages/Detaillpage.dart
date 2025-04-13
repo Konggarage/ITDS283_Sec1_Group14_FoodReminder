@@ -54,13 +54,13 @@ class _DetailPageState extends State<DetailPage> {
             return Center(child: Text('No data available'));
           } else {
             final reminder = snapshot.data!;
-            final dateString = '${reminder['date']} ${reminder['time']}';
+            final dateString =
+                '${reminder['date'] ?? ''} ${reminder['time'] ?? ''}';
             DateFormat dateFormat;
 
             // เช็คว่าเวลามี AM/PM หรือไม่
-            if (reminder['time']?.contains('AM') ??
-                false || reminder['time']?.contains('PM') ??
-                false) {
+            if ((reminder['time']?.contains('AM') ?? false) ||
+                (reminder['time']?.contains('PM') ?? false)) {
               // ถ้ามี AM/PM ใช้รูปแบบ h:mm a
               dateFormat = DateFormat('yyyy-MM-dd h:mm a');
             } else {
@@ -71,30 +71,42 @@ class _DetailPageState extends State<DetailPage> {
             final reminderDateTime = dateFormat.parse(
               dateString,
             ); // แปลงวันที่และเวลา
+            final expirationDate =
+                DateTime.tryParse(reminder['expirationDate'] ?? '') ??
+                DateTime.now();
             final now = DateTime.now();
+            String displayStatus = reminder['status'] ?? '';
 
-            String displayStatus = reminder['status'];
+            final daysDiff = expirationDate.difference(now).inDays;
 
-            final daysDiff = reminderDateTime.difference(now).inDays;
-            // ปรับสถานะ display ตาม daysDiff
-            if (reminder['status'] != 'completed') {
+            // คำนวณสถานะจาก expirationDate
+            if (displayStatus != 'completed') {
               if (daysDiff < 0) {
-                displayStatus = 'overdue'; // ถ้าเกินวันที่กำหนด
+                displayStatus = 'overdue'; // ถ้า expiration date ก่อนวันนี้
               } else if (daysDiff == 0) {
-                displayStatus = 'due'; // ถ้ายังไม่ถึง 1 วัน ให้แสดงเป็น "due"
+                displayStatus = 'due'; // ถ้า expiration date คือวันนี้
               } else {
-                displayStatus = 'upcoming'; // ถ้ายังไม่ถึงวันที่หมดอายุ
+                displayStatus = 'pending'; // ถ้า expiration date ยังไม่ถึง
               }
             }
 
             final timeMessage =
-                displayStatus == 'overdue'
-                    ? 'Overdue by ${daysDiff.abs()} day${daysDiff.abs() == 1 ? '' : 's'}'
+                displayStatus == 'completed'
+                    ? ''
+                    : displayStatus == 'overdue'
+                    ? 'Expired ${daysDiff.abs()} day${daysDiff.abs() == 1 ? '' : 's'} ago'
                     : displayStatus == 'due'
                     ? 'Due today'
                     : 'Due in $daysDiff day${daysDiff == 1 ? '' : 's'}';
 
             double screenWidth = MediaQuery.of(context).size.width;
+
+            // ตรวจสอบไฟล์ imagePath ก่อนการแสดงผล
+            if (File(reminder['imagePath'] ?? '').existsSync()) {
+              print('Image exists at ${reminder['imagePath']}');
+            } else {
+              print('Image not found');
+            }
 
             return Padding(
               padding: const EdgeInsets.all(16.0),
@@ -123,13 +135,14 @@ class _DetailPageState extends State<DetailPage> {
                     children: [
                       // ถ้ามีรูปภาพให้แสดงรูปภาพจาก 'imagePath' หรือแสดงไอคอนเตือน
                       reminder['imagePath'] != null &&
-                              reminder['imagePath'].isNotEmpty
+                              reminder['imagePath'].isNotEmpty &&
+                              File(reminder['imagePath']!).existsSync()
                           ? ClipRRect(
                             borderRadius: BorderRadius.circular(
                               12,
                             ), // ทำให้รูปมีมุมโค้ง
-                            child: Image.file(
-                              File(reminder['imagePath']),
+                            child: Image(
+                              image: FileImage(File(reminder['imagePath']!)),
                               height:
                                   screenWidth *
                                   0.6, // ขนาดรูปเป็น 60% ของความกว้างหน้าจอ
@@ -153,7 +166,7 @@ class _DetailPageState extends State<DetailPage> {
                           ),
                       const SizedBox(height: 16),
                       Text(
-                        reminder['reminder'],
+                        reminder['reminder'] ?? '',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 28,
@@ -165,22 +178,22 @@ class _DetailPageState extends State<DetailPage> {
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         Icons.category,
-                        'Category: ${reminder['category']}',
+                        'Category: ${reminder['category'] ?? ''}',
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         Icons.calendar_today,
-                        'Date: ${reminder['date']}',
+                        'Date: ${reminder['date'] ?? ''}',
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         Icons.access_time,
-                        'Time: ${reminder['time']}',
+                        'Time: ${reminder['time'] ?? ''}',
                       ),
                       const SizedBox(height: 12),
                       _buildInfoRow(
                         Icons.date_range,
-                        'Expiration Date: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(reminder['expirationDate']))}', // แสดง Expiration Date แบบวัน เดือน ปี
+                        'Expiration Date: ${DateFormat('yyyy-MM-dd').format(expirationDate)}', // แสดง Expiration Date แบบวัน เดือน ปี
                       ),
                       const SizedBox(height: 20),
                       Text(

@@ -31,13 +31,31 @@ class _SchedulePageState extends State<SchedulePage> {
 
     final updatedReminders =
         allReminders.map((reminder) {
-          final reminderDate = DateTime.parse(reminder['expirationDate']);
+          // ตรวจสอบ null ก่อนการใช้งาน expirationDate
+          DateTime expirationDateTime = DateTime.now();
+          if (reminder['expirationDate'] != null) {
+            expirationDateTime = DateTime.parse(reminder['expirationDate']);
+          }
+
+          // ตรวจสอบ null สำหรับ status
+          String displayStatus = reminder['status'] ?? 'pending';
+
           final isOverdue =
-              reminder['status'] != 'completed' && reminderDate.isBefore(today);
+              displayStatus != 'completed' &&
+              expirationDateTime.isBefore(today);
 
           return {
             ...reminder,
-            'status': isOverdue ? 'overdue' : reminder['status'],
+            'status': isOverdue ? 'overdue' : displayStatus,
+            // เพิ่มฟังก์ชันการคำนวณข้อความที่จะแสดงตามสถานะ
+            'timeMessage':
+                isOverdue
+                    ? 'Expired ${expirationDateTime.difference(today).inDays.abs()} day${expirationDateTime.difference(today).inDays.abs() == 1 ? '' : 's'} ago'
+                    : displayStatus == 'completed'
+                    ? ''
+                    : displayStatus == 'due'
+                    ? 'Due today'
+                    : 'Due in ${expirationDateTime.difference(today).inDays} day${expirationDateTime.difference(today).inDays == 1 ? '' : 's'}',
           };
         }).toList();
 
@@ -188,9 +206,12 @@ class _SchedulePageState extends State<SchedulePage> {
                   String displayStatus = reminder['status'];
 
                   // คำนวณสถานะจาก Expiration Date
-                  DateTime expirationDateTime = DateTime.parse(
-                    reminder['expirationDate'],
-                  );
+                  DateTime expirationDateTime = DateTime.now();
+                  if (reminder['expirationDate'] != null) {
+                    expirationDateTime = DateTime.parse(
+                      reminder['expirationDate'],
+                    );
+                  }
                   final now = DateTime.now();
 
                   if (reminder['status'] != 'completed') {
@@ -261,6 +282,14 @@ class _SchedulePageState extends State<SchedulePage> {
                           const SizedBox(height: 4),
                           Text(
                             'Due on: ${reminder['date']} at ${reminder['time']}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            reminder['timeMessage'],
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 15,

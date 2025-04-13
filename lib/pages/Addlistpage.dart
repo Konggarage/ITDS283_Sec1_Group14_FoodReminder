@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // นำเข้า image_picker
 import 'dart:io'; // สำหรับจัดการกับไฟล์รูป
 import 'package:myapp/Fooddatabase.dart'; // เชื่อมต่อฐานข้อมูล
-// import 'package:myapp/main.dart';
 import 'package:myapp/func/func.dart'; // นำเข้า func.dart ที่คำนวณวันหมดอายุ
 import 'package:intl/intl.dart'; // นำเข้า intl สำหรับการจัดการวันที่
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class FoodReminderPage extends StatefulWidget {
   const FoodReminderPage({super.key});
@@ -45,10 +46,16 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                       source: ImageSource.camera,
                     );
                     if (picked != null && mounted) {
-                      // Check if widget is still mounted
+                      final directory =
+                          await getApplicationDocumentsDirectory();
+                      final name = p.basename(picked.path);
+                      final savedImage = await File(
+                        picked.path,
+                      ).copy('${directory.path}/$name');
+
                       setState(() {
                         uploadedImage =
-                            picked.path; // เก็บ path ของรูปภาพที่ถ่าย
+                            savedImage.path; // เก็บ path ของรูปภาพที่ถ่าย
                       });
                     }
                   },
@@ -61,10 +68,16 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                       source: ImageSource.gallery,
                     );
                     if (picked != null && mounted) {
-                      // Check if widget is still mounted
+                      final directory =
+                          await getApplicationDocumentsDirectory();
+                      final name = p.basename(picked.path);
+                      final savedImage = await File(
+                        picked.path,
+                      ).copy('${directory.path}/$name');
+
                       setState(() {
                         uploadedImage =
-                            picked.path; // เก็บ path ของรูปภาพที่เลือก
+                            savedImage.path; // เก็บ path ของรูปภาพที่เลือก
                       });
                     }
                   },
@@ -360,7 +373,8 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                       color: Colors.grey[800],
                     ),
                     child:
-                        uploadedImage.isEmpty
+                        uploadedImage.isEmpty ||
+                                !File(uploadedImage).existsSync()
                             ? const Center(
                               child: Icon(
                                 Icons.add_a_photo_outlined,
