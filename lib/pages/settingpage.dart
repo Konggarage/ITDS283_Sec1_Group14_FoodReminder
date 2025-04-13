@@ -16,6 +16,7 @@ class Settingpage extends StatefulWidget {
 
 class _SettingpageState extends State<Settingpage> {
   bool isReminderOn = true;
+  bool isDarkMode = false;
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   int phoneNumber = 0;
@@ -31,11 +32,14 @@ class _SettingpageState extends State<Settingpage> {
     final loadedName = prefs.getString('username') ?? '';
     final loadedPhone = prefs.getString('phone') ?? '';
     final reminder = prefs.getBool('expirationAlertsEnabled') ?? true;
+    final isDark = prefs.getBool('isDarkModeEnabled') ?? true;
 
     setState(() {
       usernameController.text = loadedName;
       phoneController.text = loadedPhone;
       isReminderOn = reminder;
+      isDarkMode = isDark;
+      MyApp.setThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
     });
   }
 
@@ -46,6 +50,7 @@ class _SettingpageState extends State<Settingpage> {
 
     await prefs.setString('username', username);
     await prefs.setString('phone', phone);
+    await prefs.setBool('isDarkModeEnabled', isDarkMode);
 
     setState(() {
       phoneNumber = int.tryParse(phone) ?? 0;
@@ -132,7 +137,7 @@ class _SettingpageState extends State<Settingpage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -140,7 +145,7 @@ class _SettingpageState extends State<Settingpage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: const Icon(Icons.close),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -151,12 +156,11 @@ class _SettingpageState extends State<Settingpage> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const Text(
+            Text(
               "Account Settings",
-              style: TextStyle(
-                fontSize: 24,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                fontSize: 24,
               ),
             ),
             const SizedBox(height: 24),
@@ -185,7 +189,7 @@ class _SettingpageState extends State<Settingpage> {
                     final imagePath = prefs.getString('profileImage') ?? '';
                     return CircleAvatar(
                       radius: 50,
-                      backgroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).cardColor,
                       backgroundImage:
                           imagePath.isNotEmpty && File(imagePath).existsSync()
                               ? FileImage(File(imagePath))
@@ -211,38 +215,42 @@ class _SettingpageState extends State<Settingpage> {
             const SizedBox(height: 24),
             TextField(
               controller: usernameController,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
               decoration: InputDecoration(
                 hintText: 'Enter your username',
-                hintStyle: const TextStyle(color: Colors.grey),
+                hintStyle: Theme.of(context).textTheme.bodyMedium,
                 labelText: "Username",
-                labelStyle: const TextStyle(color: Colors.white),
-                suffixIcon: const Icon(Icons.edit, color: Colors.white),
+                labelStyle: Theme.of(context).textTheme.bodyMedium,
+                suffixIcon: const Icon(Icons.edit),
                 filled: true,
-                fillColor: Colors.grey[800],
+                fillColor: Theme.of(context).cardColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: phoneController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
                     keyboardType: TextInputType.number,
                     maxLength: 10,
                     decoration: InputDecoration(
                       counterText: '', // hides character counter
                       hintText: '+66 xx-xxx-xxxx',
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: Theme.of(context).textTheme.bodyMedium,
                       labelText: "Phone number",
-                      labelStyle: const TextStyle(color: Colors.white),
-                      suffixIcon: const Icon(Icons.edit, color: Colors.white),
+                      labelStyle: Theme.of(context).textTheme.bodyMedium,
+                      suffixIcon: const Icon(Icons.edit),
                       filled: true,
-                      fillColor: Colors.grey[800],
+                      fillColor: Theme.of(context).cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -269,26 +277,29 @@ class _SettingpageState extends State<Settingpage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[800],
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "Enable Expiration Alerts",
-                    style: TextStyle(color: Colors.white),
+                  Text(
+                    "Dark Mode",
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   Switch(
-                    value: isReminderOn,
+                    value: isDarkMode,
                     onChanged: (val) async {
                       final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool('expirationAlertsEnabled', val);
+                      await prefs.setBool('isDarkModeEnabled', val);
                       setState(() {
-                        isReminderOn = val;
+                        isDarkMode = val;
+                        MyApp.setThemeMode(
+                          isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                        );
                       });
                     },
-                    activeColor: Colors.green,
+                    activeColor: Colors.amber,
                   ),
                 ],
               ),

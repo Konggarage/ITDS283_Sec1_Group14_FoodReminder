@@ -64,7 +64,7 @@ class _CompletedPageState extends State<CompletedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Completed Reminders',
           style: TextStyle(color: Colors.white),
         ),
@@ -76,13 +76,9 @@ class _CompletedPageState extends State<CompletedPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Completed Reminder:',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -159,27 +155,23 @@ class CompletedReminderItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.grey[800],
+      color: Theme.of(context).cardColor,
+      elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         title: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          title.isNotEmpty ? title : '(No Title)',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           '$date $time',
-          style: const TextStyle(color: Colors.white70, fontSize: 16),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete, color: Colors.white),
-          onPressed: onDelete, // เรียกใช้ฟังก์ชันลบ
-        ),
+        trailing: Icon(Icons.delete, color: Colors.red),
       ),
     );
   }

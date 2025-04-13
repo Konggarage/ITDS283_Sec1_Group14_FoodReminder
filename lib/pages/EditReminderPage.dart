@@ -81,9 +81,11 @@ class _EditReminderPageState extends State<EditReminderPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Edit your reminder:',
-              style: TextStyle(fontSize: 20, color: Colors.white),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 20),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -92,7 +94,6 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 labelText: 'Reminder Title',
                 labelStyle: TextStyle(color: Colors.grey),
               ),
-              style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -113,7 +114,6 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 labelText: 'Time',
                 labelStyle: TextStyle(color: Colors.grey),
               ),
-              style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 16),
             // ให้ผู้ใช้เลือกวันที่ใน DatePicker
@@ -145,18 +145,31 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 labelText: 'Date', // เปลี่ยนจาก Date เป็น Expiration Date
                 labelStyle: TextStyle(color: Colors.grey),
               ),
-              style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 20),
             // เพิ่มให้ผู้ใช้กรอก Expiration Date หรือใช้การคำนวณ
             TextField(
-              controller:
-                  _expirationDateController, // ให้ผู้ใช้กรอกค่า Expiration Date เอง
+              controller: _expirationDateController,
+              readOnly: true,
+              onTap: () async {
+                DateTime? selectedExpirationDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2101),
+                );
+                if (selectedExpirationDate != null) {
+                  setState(() {
+                    _expirationDate =
+                        selectedExpirationDate.toString().split(' ')[0];
+                    _expirationDateController.text = _expirationDate;
+                  });
+                }
+              },
               decoration: const InputDecoration(
                 labelText: 'Expiration Date',
                 labelStyle: TextStyle(color: Colors.grey),
               ),
-              style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

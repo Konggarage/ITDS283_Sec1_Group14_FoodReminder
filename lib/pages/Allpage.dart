@@ -40,6 +40,7 @@ class _AllPageState extends State<AllPage> {
                 );
                 final isOverdue =
                     expirationDate.isBefore(today) &&
+                    expirationDate.day != today.day &&
                     reminder['status'] != 'completed';
 
                 final displayStatus =
@@ -140,13 +141,11 @@ class _AllPageState extends State<AllPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'All Reminders:',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -225,7 +224,7 @@ class _ReminderItemState extends State<ReminderItem> {
     return GestureDetector(
       onTap: widget.onTap,
       child: Card(
-        color: Colors.grey[800],
+        color: Theme.of(context).cardColor,
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -261,9 +260,7 @@ class _ReminderItemState extends State<ReminderItem> {
                   children: [
                     Text(
                       widget.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -302,9 +299,9 @@ class _ReminderItemState extends State<ReminderItem> {
                     backgroundColor: Colors.grey[700],
                     radius: 18,
                     child: IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.edit,
-                        color: Colors.white,
+                        color: Colors.blueAccent,
                         size: 16,
                       ),
                       onPressed: widget.onEdit,
@@ -315,11 +312,7 @@ class _ReminderItemState extends State<ReminderItem> {
                     backgroundColor: Colors.grey[700],
                     radius: 18,
                     child: IconButton(
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                        size: 16,
-                      ),
+                      icon: Icon(Icons.delete, color: Colors.red, size: 16),
                       onPressed: widget.onDelete,
                     ),
                   ),

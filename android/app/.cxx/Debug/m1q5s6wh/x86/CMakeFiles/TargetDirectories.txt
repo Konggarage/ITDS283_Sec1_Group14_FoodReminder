@@ -1,0 +1,2 @@
+/Users/mara/Desktop/ITDS283_Sec1_Group14_FoodReminder/android/app/.cxx/Debug/m1q5s6wh/x86/CMakeFiles/edit_cache.dir
+/Users/mara/Desktop/ITDS283_Sec1_Group14_FoodReminder/android/app/.cxx/Debug/m1q5s6wh/x86/CMakeFiles/rebuild_cache.dir

@@ -8,27 +8,14 @@ class Analyze extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-
         title: const Text(
           'Analyze Data',
           style: TextStyle(color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              // Navigate to settings page
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Settingpage()),
-              );
-            },
-          ),
-        ],
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      backgroundColor: Colors.black,
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -52,30 +39,42 @@ class Analyze extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Top 3 Most Wasted Food Categories:',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '1. Meat',
-              style: TextStyle(color: Colors.white70, fontSize: 18),
-            ),
+            Text('1. Meat', style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               '2. Dairy products',
-              style: TextStyle(color: Colors.white70, fontSize: 18),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               '3. Fresh vegetables',
-              style: TextStyle(color: Colors.white70, fontSize: 18),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget categoryCard(BuildContext context, String title) {
+    return Container(
+      decoration: BoxDecoration(color: Theme.of(context).cardColor),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
       ),
     );

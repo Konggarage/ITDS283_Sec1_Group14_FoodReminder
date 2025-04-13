@@ -50,7 +50,9 @@ class _SchedulePageState extends State<SchedulePage> {
             // เพิ่มฟังก์ชันการคำนวณข้อความที่จะแสดงตามสถานะ
             'timeMessage':
                 isOverdue
-                    ? 'Expired ${expirationDateTime.difference(today).inDays.abs()} day${expirationDateTime.difference(today).inDays.abs() == 1 ? '' : 's'} ago'
+                    ? expirationDateTime.difference(today).inDays == 0
+                        ? 'Expired today'
+                        : 'Expired ${expirationDateTime.difference(today).inDays.abs()} day${expirationDateTime.difference(today).inDays.abs() == 1 ? '' : 's'} ago'
                     : displayStatus == 'completed'
                     ? ''
                     : displayStatus == 'due'
@@ -68,9 +70,9 @@ class _SchedulePageState extends State<SchedulePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Scheduled Reminders',
-          style: TextStyle(color: Colors.white, fontSize: 24),
+          style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -83,7 +85,7 @@ class _SchedulePageState extends State<SchedulePage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -98,18 +100,16 @@ class _SchedulePageState extends State<SchedulePage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.calendar_month,
-                        color: Colors.white,
+                        color: Colors.indigo,
                         size: 28,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Schedule',
-                        style: TextStyle(
-                          fontSize: 22,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -117,16 +117,16 @@ class _SchedulePageState extends State<SchedulePage> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Year:',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
+                        style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(width: 12),
                       DropdownButton<int>(
                         value: selectedYear,
-                        dropdownColor: Colors.grey[900],
-                        style: const TextStyle(color: Colors.white),
-                        iconEnabledColor: Colors.white,
+                        dropdownColor: Theme.of(context).cardColor,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        iconEnabledColor: Theme.of(context).iconTheme.color,
                         items:
                             List.generate(10, (index) => 2020 + index)
                                 .map(
@@ -168,8 +168,8 @@ class _SchedulePageState extends State<SchedulePage> {
                           decoration: BoxDecoration(
                             color:
                                 selectedMonth == formattedMonth
-                                    ? Colors.blueAccent
-                                    : Colors.grey[850],
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
@@ -181,12 +181,18 @@ class _SchedulePageState extends State<SchedulePage> {
                           ),
                           child: Text(
                             DateFormat('MMM').format(monthDate),
-                            style: TextStyle(
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
                               color:
                                   selectedMonth == formattedMonth
                                       ? Colors.white
-                                      : Colors.white70,
-                              fontWeight: FontWeight.bold,
+                                      : Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color
+                                          ?.withOpacity(0.7),
                             ),
                           ),
                         ),
@@ -247,7 +253,7 @@ class _SchedulePageState extends State<SchedulePage> {
                   }
 
                   return Card(
-                    color: Colors.grey[800],
+                    color: Theme.of(context).cardColor,
                     margin: const EdgeInsets.symmetric(
                       vertical: 8,
                       horizontal: 4,
@@ -257,52 +263,124 @@ class _SchedulePageState extends State<SchedulePage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Stack(
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.notifications, color: Colors.white),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  reminder['reminder'],
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.notifications,
+                                    color: Colors.deepOrange,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      reminder['reminder'],
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Divider(color: Theme.of(context).dividerColor),
+                              const SizedBox(height: 6),
+
+                              // 📅 Date & 🕒 Time
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_month,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    reminder['date'],
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Icon(
+                                    Icons.access_time,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    reminder['time'],
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ],
+                              ),
+
+                              // ⚠️ Expiration Date
+                              if (reminder['expirationDate'] != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        size: 16,
+                                        color: Colors.orange,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Exp. ${DateFormat('MMM d, yyyy').format(DateTime.parse(reminder['expirationDate']))}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall?.copyWith(
+                                          color: Colors.orange,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
+
+                              // ❗ Expired Text
+                              if (reminder['timeMessage'] != null &&
+                                  reminder['timeMessage'].toString().isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    reminder['timeMessage'],
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
+                                      color:
+                                          reminder['status'] == 'overdue'
+                                              ? Colors.red
+                                              : null,
+                                    ),
+                                  ),
+                                ),
+
+                              const SizedBox(
+                                height: 28,
+                              ), // สำหรับเว้นที่ให้ CircleAvatar
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          Divider(color: Colors.white30),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Due on: ${reminder['date']} at ${reminder['time']}',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            reminder['timeMessage'],
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: statusColor,
-                            child: Icon(
-                              statusIcon,
-                              size: 18,
-                              color: Colors.white,
+
+                          // 🔴 Status Icon (bottom right)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: CircleAvatar(
+                              radius: 16,
+                              backgroundColor: statusColor,
+                              child: Icon(
+                                statusIcon,
+                                size: 18,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],

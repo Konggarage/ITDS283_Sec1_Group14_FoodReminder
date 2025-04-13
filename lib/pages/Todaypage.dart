@@ -61,7 +61,10 @@ class _TodayPageState extends State<TodayPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this reminder?'),
+          content: const Text(
+            'Are you sure you want to delete this reminder?',
+            style: TextStyle(color: Colors.black),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -110,12 +113,11 @@ class _TodayPageState extends State<TodayPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Reminder for Today:',
-              style: TextStyle(
-                fontSize: 22,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                fontSize: 22,
               ),
             ),
             const SizedBox(height: 16),
@@ -188,7 +190,7 @@ class ReminderItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.grey[850],
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
       shadowColor: Colors.black54,
@@ -218,14 +220,7 @@ class ReminderItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 6),
                   Row(
                     children: [
@@ -255,7 +250,11 @@ class ReminderItem extends StatelessWidget {
                   backgroundColor: Colors.grey[700],
                   radius: 18,
                   child: IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.white, size: 16),
+                    icon: const Icon(
+                      Icons.edit,
+                      color: Colors.blueAccent,
+                      size: 16,
+                    ),
                     onPressed: onEdit,
                   ),
                 ),
@@ -264,11 +263,7 @@ class ReminderItem extends StatelessWidget {
                   backgroundColor: Colors.grey[700],
                   radius: 18,
                   child: IconButton(
-                    icon: const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                      size: 16,
-                    ),
+                    icon: const Icon(Icons.delete, color: Colors.red, size: 16),
                     onPressed: onDelete,
                   ),
                 ),

@@ -30,59 +30,76 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
       context: context,
       builder:
           (_) => AlertDialog(
-            backgroundColor: const Color(0xFF2E3047),
-            title: const Text(
+            backgroundColor:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[900]
+                    : Theme.of(context).dialogBackgroundColor,
+            title: Text(
               "Select Image",
-              style: TextStyle(color: Colors.white),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-            content: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.camera_alt, color: Colors.white),
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    final picked = await _picker.pickImage(
-                      source: ImageSource.camera,
-                    );
-                    if (picked != null && mounted) {
-                      final directory =
-                          await getApplicationDocumentsDirectory();
-                      final name = p.basename(picked.path);
-                      final savedImage = await File(
-                        picked.path,
-                      ).copy('${directory.path}/$name');
-
-                      setState(() {
-                        uploadedImage =
-                            savedImage.path; // เก็บ path ของรูปภาพที่ถ่าย
-                      });
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.photo, color: Colors.white),
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    final picked = await _picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (picked != null && mounted) {
-                      final directory =
-                          await getApplicationDocumentsDirectory();
-                      final name = p.basename(picked.path);
-                      final savedImage = await File(
-                        picked.path,
-                      ).copy('${directory.path}/$name');
-
-                      setState(() {
-                        uploadedImage =
-                            savedImage.path; // เก็บ path ของรูปภาพที่เลือก
-                      });
-                    }
-                  },
-                ),
-              ],
+            content: Container(
+              decoration: BoxDecoration(
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[850]
+                        : Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.camera_alt,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final picked = await _picker.pickImage(
+                        source: ImageSource.camera,
+                      );
+                      if (picked != null && mounted) {
+                        final directory =
+                            await getApplicationDocumentsDirectory();
+                        final name = p.basename(picked.path);
+                        final savedImage = await File(
+                          picked.path,
+                        ).copy('${directory.path}/$name');
+                        setState(() {
+                          uploadedImage = savedImage.path;
+                        });
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.photo,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final picked = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      if (picked != null && mounted) {
+                        final directory =
+                            await getApplicationDocumentsDirectory();
+                        final name = p.basename(picked.path);
+                        final savedImage = await File(
+                          picked.path,
+                        ).copy('${directory.path}/$name');
+                        setState(() {
+                          uploadedImage = savedImage.path;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
     );
@@ -98,9 +115,11 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
     if (reminder.isEmpty || category.isEmpty || date.isEmpty || time.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
+          content: Text(
             'Please fill all required fields',
-            style: TextStyle(color: Colors.white),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.white),
           ),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
@@ -166,13 +185,11 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        title: Text('Food Reminder', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
-        title: const Text(
-          'Food Reminder',
-          style: TextStyle(color: Colors.white),
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: TextButton(
@@ -187,7 +204,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
               });
             },
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
-            child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+            child: Text('Cancel', style: TextStyle(color: Colors.red)),
           ),
         ),
         actions: [
@@ -211,17 +228,21 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
               // Reminder text field
               TextFormField(
                 controller: reminderController,
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Put your food reminder',
-                  labelStyle: const TextStyle(color: Colors.white),
+                  labelStyle: Theme.of(context).textTheme.bodyLarge,
                   filled: true,
-                  fillColor: Colors.grey[800],
+                  fillColor: Theme.of(context).cardColor,
                   hintText: 'Enter your reminder',
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: Theme.of(context).textTheme.bodyLarge,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                 ),
               ),
@@ -230,7 +251,10 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
               // Category dropdown
               DropdownButtonFormField<String>(
                 value: selectedCategory.isNotEmpty ? selectedCategory : null,
-                hint: Text("Select a category"),
+                hint: Text(
+                  "Select a category",
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
                 onChanged: (value) {
                   setState(() {
                     selectedCategory = value!;
@@ -254,23 +278,30 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     ].map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(
+                          value,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
                       );
                     }).toList(),
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Categories',
-                  labelStyle: const TextStyle(color: Colors.white),
+                  labelStyle: Theme.of(context).textTheme.bodyLarge,
                   filled: true,
-                  fillColor: const Color.fromARGB(255, 65, 63, 63),
+                  fillColor: Theme.of(context).cardColor,
                   hintText: 'Select a category',
-                  hintStyle: const TextStyle(color: Colors.grey),
+                  hintStyle: Theme.of(context).textTheme.bodyLarge,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                 ),
-                dropdownColor: const Color.fromARGB(255, 65, 63, 63),
+                dropdownColor: Theme.of(context).cardColor,
               ),
               const SizedBox(height: 16),
 
@@ -302,17 +333,21 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Date',
-                  labelStyle: const TextStyle(color: Colors.white),
+                  labelStyle: Theme.of(context).textTheme.bodyLarge,
                   filled: true,
-                  fillColor: Colors.grey[800],
+                  fillColor: Theme.of(context).cardColor,
                   hintText: 'Pick a date',
-                  hintStyle: const TextStyle(color: Colors.white),
+                  hintStyle: Theme.of(context).textTheme.bodyLarge,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                 ),
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -335,17 +370,21 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Time',
-                  labelStyle: const TextStyle(color: Colors.white),
+                  labelStyle: Theme.of(context).textTheme.bodyLarge,
                   filled: true,
-                  fillColor: Colors.grey[800],
+                  fillColor: Theme.of(context).cardColor,
                   hintText: selectedTime.isEmpty ? "Pick a Time" : selectedTime,
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: Theme.of(context).textTheme.bodyLarge,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                 ),
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -355,7 +394,9 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
                     'Expiration Date: $expirationDate',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
                   ),
                 ),
 
@@ -370,15 +411,24 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
-                      color: Colors.grey[800],
+                      color: Theme.of(context).cardColor,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(
+                            context,
+                          ).shadowColor.withOpacity(0.15),
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child:
                         uploadedImage.isEmpty ||
                                 !File(uploadedImage).existsSync()
-                            ? const Center(
+                            ? Center(
                               child: Icon(
                                 Icons.add_a_photo_outlined,
-                                color: Colors.white,
+                                color: Theme.of(context).iconTheme.color,
                                 size: 40, // ขนาดของไอคอน
                               ),
                             )

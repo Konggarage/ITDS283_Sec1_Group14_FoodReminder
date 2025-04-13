@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           // Main UI elements
@@ -120,15 +120,19 @@ class _HomePageState extends State<HomePage> {
                     onChanged: (query) {
                       _filterSearchResults(query); // ใช้เวอร์ชัน async นี้แทน
                     },
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search, color: Colors.white),
+                      prefixIcon: Icon(Icons.search),
                       hintText: 'Search...',
-                      hintStyle: const TextStyle(color: Colors.white),
+                      hintStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+                      ),
                       filled: true,
-                      fillColor: const Color(
-                        0xFF2A2A2A,
-                      ), // Dark grey background
+                      fillColor: Theme.of(context).cardColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
@@ -215,9 +219,7 @@ class _HomePageState extends State<HomePage> {
                       .isNotEmpty, // Only show when search query is not empty
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(
-                    0.8,
-                  ), // Dark background for dropdown
+                  color: Theme.of(context).cardColor, // Updated color
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: ListView.builder(
@@ -228,7 +230,10 @@ class _HomePageState extends State<HomePage> {
                     return ListTile(
                       title: Text(
                         reminder['reminder'],
-                        style: TextStyle(color: Colors.white),
+                        style:
+                            Theme.of(
+                              context,
+                            ).textTheme.bodyLarge, // Updated text style
                       ),
                       onTap: () {
                         final reminderId =
@@ -256,7 +261,7 @@ class _HomePageState extends State<HomePage> {
 
   AppBar appBar() {
     return AppBar(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       leading: IconButton(
         onPressed: () {
           Navigator.push(
@@ -264,11 +269,11 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (context) => Analyze()),
           );
         },
-        icon: Icon(Icons.bar_chart, color: Colors.white),
+        icon: const Icon(Icons.bar_chart),
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.settings, color: Colors.white),
+          icon: const Icon(Icons.settings),
           onPressed: () async {
             await Navigator.push(
               context,
@@ -292,7 +297,7 @@ class _HomePageState extends State<HomePage> {
       child: Container(
         width: MediaQuery.of(context).size.width * 0.4,
         decoration: BoxDecoration(
-          color: Color(0xFF1C1C1E),
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
         ),
         padding: EdgeInsets.all(16),
@@ -302,10 +307,21 @@ class _HomePageState extends State<HomePage> {
             CircleAvatar(
               backgroundColor: color.withOpacity(0.2),
               radius: 20,
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(
+                icon,
+                color: Theme.of(context).iconTheme.color ?? color,
+                size: 24,
+              ),
             ),
             SizedBox(height: 10),
-            Text(title, style: TextStyle(color: Colors.white70, fontSize: 16)),
+            Text(
+              title,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.titleMedium?.color,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
           ],
         ),
       ),
@@ -317,7 +333,7 @@ class _HomePageState extends State<HomePage> {
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.green.shade600, width: 3),
           boxShadow: [
@@ -336,7 +352,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 CircleAvatar(
                   radius: 60,
-                  backgroundColor: Colors.grey[300],
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   backgroundImage:
                       (profileImagePath != null && profileImagePath!.isNotEmpty)
                           ? FileImage(File(profileImagePath!))
@@ -346,32 +362,36 @@ class _HomePageState extends State<HomePage> {
                           ? Icon(
                             Icons.person,
                             size: 60,
-                            color: Colors.grey[700],
+                            color: Theme.of(context).iconTheme.color,
                           )
                           : null,
                 ),
                 SizedBox(width: 13),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Welcome Back!",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Welcome Back!",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      profileName ?? 'Guest',
-                      style: TextStyle(fontSize: 15),
-                    ),
-                  ],
+                      SizedBox(height: 10),
+                      Text(
+                        profileName ?? 'Guest',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 10),
-            Text(phoneNumber ?? '', style: TextStyle(fontSize: 16)),
+            Text(
+              phoneNumber ?? '',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
         ),
       ),
