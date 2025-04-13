@@ -387,36 +387,22 @@ class CategoryDetailsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Management Tips:',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            '🧴 Refrigeration: Store opened condiments as recommended.',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            '📅 Track Usage: Label with date opened.',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            '🧂 Use Small Portions: Avoid contamination by not double-dipping.',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ],
+                    const Text(
+                      'Management Tips:',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      '🧴 Refrigeration: Store opened condiments as recommended.',
+                    ),
+                    SizedBox(height: 12),
+                    Text('📅 Track Usage: Label with date opened.'),
+                    SizedBox(height: 12),
+                    Text(
+                      '🧂 Use Small Portions: Avoid contamination by not double-dipping.',
                     ),
                   ],
                 )
