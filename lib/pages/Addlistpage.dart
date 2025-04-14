@@ -204,7 +204,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
               });
             },
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
-            child: Text('Cancel', style: TextStyle(color: Colors.red)),
+            child: Text('Clear', style: TextStyle(color: Colors.red)),
           ),
         ),
         actions: [

@@ -278,6 +278,7 @@ class _AnalyzeState extends State<Analyze> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
