@@ -104,107 +104,109 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: appBar(),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // Main UI elements
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                // SearchBar with no space below it
-                Container(
-                  padding: EdgeInsets.only(
-                    bottom: 0,
-                  ), // Adjust padding to reduce space
-                  child: TextField(
-                    onChanged: (query) {
-                      _filterSearchResults(query); // ใช้เวอร์ชัน async นี้แทน
-                    },
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                    ),
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search),
-                      hintText: 'Search...',
-                      hintStyle: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  // SearchBar with no space below it
+                  Container(
+                    padding: EdgeInsets.only(
+                      bottom: 0,
+                    ), // Adjust padding to reduce space
+                    child: TextField(
+                      onChanged: (query) {
+                        _filterSearchResults(query); // ใช้เวอร์ชัน async นี้แทน
+                      },
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
-                      filled: true,
-                      fillColor: Theme.of(context).cardColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search),
+                        hintText: 'Search...',
+                        hintStyle: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 15),
                       ),
-                      contentPadding: EdgeInsets.symmetric(vertical: 15),
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-                // Profile Card
-                profileCard(),
-                SizedBox(height: 60),
-                // Category Cards
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: GridView.count(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 15,
-                    crossAxisSpacing: 15,
-                    childAspectRatio: 1.2,
-                    children: [
-                      categoryCard(
-                        Icons.event_available,
-                        "Today",
-                        Colors.blue,
-                        () {
+                  SizedBox(height: 20),
+                  // Profile Card
+                  profileCard(),
+                  SizedBox(height: 60),
+                  // Category Cards
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 15,
+                      crossAxisSpacing: 15,
+                      childAspectRatio: 1.2,
+                      children: [
+                        categoryCard(
+                          Icons.event_available,
+                          "Today",
+                          Colors.blue,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TodayPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        categoryCard(
+                          Icons.calendar_today,
+                          "Schedule",
+                          Colors.red,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SchedulePage(),
+                              ),
+                            );
+                          },
+                        ),
+                        categoryCard(Icons.list_alt, "All", Colors.grey, () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => TodayPage(),
-                            ),
+                            MaterialPageRoute(builder: (context) => AllPage()),
                           );
-                        },
-                      ),
-                      categoryCard(
-                        Icons.calendar_today,
-                        "Schedule",
-                        Colors.red,
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SchedulePage(),
-                            ),
-                          );
-                        },
-                      ),
-                      categoryCard(Icons.list_alt, "All", Colors.grey, () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => AllPage()),
-                        );
-                      }),
-                      categoryCard(
-                        Icons.check_circle,
-                        "Completed",
-                        Colors.green,
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CompletedPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                        }),
+                        categoryCard(
+                          Icons.check_circle,
+                          "Completed",
+                          Colors.green,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CompletedPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 

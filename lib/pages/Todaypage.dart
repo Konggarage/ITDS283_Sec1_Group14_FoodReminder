@@ -195,83 +195,105 @@ class ReminderItem extends StatelessWidget {
       elevation: 4,
       shadowColor: Colors.black54,
       margin: const EdgeInsets.symmetric(vertical: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Transform.scale(
-              scale: 1.2,
-              child: Checkbox(
-                value: false,
-                onChanged: (bool? value) {
-                  // เปลี่ยนเป็น bool?
-                  onCheckboxChanged(value); // ส่งค่า nullable bool
-                },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                activeColor: Colors.blueAccent,
-                checkColor: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.schedule,
-                        color: Colors.red, // Red icon for expiration date
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Expiration Date: $expirationDate',
-                        style: const TextStyle(
-                          color: Colors.red, // Red text for expiration date
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child:
+                constraints.maxWidth < 400
+                    ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCheckbox(),
+                        const SizedBox(height: 12),
+                        _buildTitle(context),
+                        const SizedBox(height: 6),
+                        _buildExpirationDate(),
+                      ],
+                    )
+                    : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCheckbox(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildTitle(context),
+                              const SizedBox(height: 6),
+                              _buildExpirationDate(),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Column(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.grey[700],
-                  radius: 18,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.edit,
-                      color: Colors.blueAccent,
-                      size: 16,
+                        const SizedBox(width: 8),
+                        _buildEditDeleteButtons(),
+                      ],
                     ),
-                    onPressed: onEdit,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                CircleAvatar(
-                  backgroundColor: Colors.grey[700],
-                  radius: 18,
-                  child: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red, size: 16),
-                    onPressed: onDelete,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+          );
+        },
       ),
+    );
+  }
+
+  Widget _buildCheckbox() {
+    return Transform.scale(
+      scale: 1.2,
+      child: Checkbox(
+        value: false,
+        onChanged: (bool? value) {
+          onCheckboxChanged(value); // ส่งค่า nullable bool
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        activeColor: Colors.blueAccent,
+        checkColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildExpirationDate() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule, color: Colors.red, size: 18),
+          const SizedBox(width: 6),
+          Text(
+            'Expiration Date: $expirationDate',
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditDeleteButtons() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.edit, size: 18, color: Colors.blueAccent),
+          onPressed: onEdit,
+          tooltip: 'Edit',
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+          onPressed: onDelete,
+          tooltip: 'Delete',
+        ),
+      ],
     );
   }
 }

@@ -137,6 +137,7 @@ class _SettingpageState extends State<Settingpage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -152,175 +153,179 @@ class _SettingpageState extends State<Settingpage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Text(
-              "Account Settings",
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Text(
+                "Account Settings",
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            GestureDetector(
-              onTap: () async {
-                final picker = ImagePicker();
-                final pickedFile = await picker.pickImage(
-                  source: ImageSource.gallery,
-                );
-                if (pickedFile != null) {
-                  final directory = await getApplicationDocumentsDirectory();
-                  final name = p.basename(pickedFile.path);
-                  final savedImage = await File(
-                    pickedFile.path,
-                  ).copy('${directory.path}/$name');
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () async {
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  if (pickedFile != null) {
+                    final directory = await getApplicationDocumentsDirectory();
+                    final name = p.basename(pickedFile.path);
+                    final savedImage = await File(
+                      pickedFile.path,
+                    ).copy('${directory.path}/$name');
 
-                  _saveProfileImagePath(savedImage.path);
-                  setState(() {}); // รีโหลด CircleAvatar
-                }
-              },
-              child: FutureBuilder<SharedPreferences>(
-                future: SharedPreferences.getInstance(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    final prefs = snapshot.data!;
-                    final imagePath = prefs.getString('profileImage') ?? '';
-                    return CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Theme.of(context).cardColor,
-                      backgroundImage:
-                          imagePath.isNotEmpty && File(imagePath).existsSync()
-                              ? FileImage(File(imagePath))
-                              : null,
-                      child:
-                          imagePath.isEmpty || !File(imagePath).existsSync()
-                              ? const Icon(
-                                Icons.person,
-                                size: 50,
-                                color: Colors.grey,
-                              )
-                              : null,
-                    );
-                  } else {
-                    return const CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.grey,
-                    );
+                    _saveProfileImagePath(savedImage.path);
+                    setState(() {}); // รีโหลด CircleAvatar
                   }
                 },
-              ),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: usernameController,
-              style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Enter your username',
-                hintStyle: Theme.of(context).textTheme.bodyMedium,
-                labelText: "Username",
-                labelStyle: Theme.of(context).textTheme.bodyMedium,
-                suffixIcon: const Icon(Icons.edit),
-                filled: true,
-                fillColor: Theme.of(context).cardColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: phoneController,
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                    ),
-                    keyboardType: TextInputType.number,
-                    maxLength: 10,
-                    decoration: InputDecoration(
-                      counterText: '', // hides character counter
-                      hintText: '+66 xx-xxx-xxxx',
-                      hintStyle: Theme.of(context).textTheme.bodyMedium,
-                      labelText: "Phone number",
-                      labelStyle: Theme.of(context).textTheme.bodyMedium,
-                      suffixIcon: const Icon(Icons.edit),
-                      filled: true,
-                      fillColor: Theme.of(context).cardColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    handleSave();
+                child: FutureBuilder<SharedPreferences>(
+                  future: SharedPreferences.getInstance(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      final prefs = snapshot.data!;
+                      final imagePath = prefs.getString('profileImage') ?? '';
+                      return CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Theme.of(context).cardColor,
+                        backgroundImage:
+                            imagePath.isNotEmpty && File(imagePath).existsSync()
+                                ? FileImage(File(imagePath))
+                                : null,
+                        child:
+                            imagePath.isEmpty || !File(imagePath).existsSync()
+                                ? const Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.grey,
+                                )
+                                : null,
+                      );
+                    } else {
+                      return const CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.grey,
+                      );
+                    }
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text(
-                    "Save",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Dark Mode",
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  Switch(
-                    value: isDarkMode,
-                    onChanged: (val) async {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool('isDarkModeEnabled', val);
-                      setState(() {
-                        isDarkMode = val;
-                        MyApp.setThemeMode(
-                          isDarkMode ? ThemeMode.dark : ThemeMode.light,
-                        );
-                      });
-                    },
-                    activeColor: Colors.amber,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _showDeleteConfirmation,
-                icon: const Icon(Icons.logout, color: Colors.white),
-                label: const Text("Delete Account"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red[400],
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
+              const SizedBox(height: 24),
+              TextField(
+                controller: usernameController,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Enter your username',
+                  hintStyle: Theme.of(context).textTheme.bodyMedium,
+                  labelText: "Username",
+                  labelStyle: Theme.of(context).textTheme.bodyMedium,
+                  suffixIcon: const Icon(Icons.edit),
+                  filled: true,
+                  fillColor: Theme.of(context).cardColor,
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: phoneController,
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                      keyboardType: TextInputType.number,
+                      maxLength: 10,
+                      decoration: InputDecoration(
+                        counterText: '', // hides character counter
+                        hintText: '+66 xx-xxx-xxxx',
+                        hintStyle: Theme.of(context).textTheme.bodyMedium,
+                        labelText: "Phone number",
+                        labelStyle: Theme.of(context).textTheme.bodyMedium,
+                        suffixIcon: const Icon(Icons.edit),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      handleSave();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text(
+                      "Save",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Dark Mode",
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    Switch(
+                      value: isDarkMode,
+                      onChanged: (val) async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('isDarkModeEnabled', val);
+                        setState(() {
+                          isDarkMode = val;
+                          MyApp.setThemeMode(
+                            isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                          );
+                        });
+                      },
+                      activeColor: Colors.amber,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _showDeleteConfirmation,
+                  icon: const Icon(Icons.logout, color: Colors.white),
+                  label: const Text("Delete Account"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[400],
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

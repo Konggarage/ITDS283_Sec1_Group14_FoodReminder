@@ -225,35 +225,34 @@ class _ReminderItemState extends State<ReminderItem> {
       onTap: widget.onTap,
       child: Card(
         color: Theme.of(context).cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Transform.scale(
-                scale: 1.2,
-                child: Checkbox(
-                  value: isChecked,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      isChecked = value ?? false;
+              Checkbox(
+                value: isChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    isChecked = value ?? false;
+                  });
+                  if (isChecked) {
+                    _completionTimer = Timer(const Duration(seconds: 3), () {
+                      widget.onCheckboxChanged(true);
                     });
-                    if (isChecked) {
-                      _completionTimer = Timer(const Duration(seconds: 3), () {
-                        widget.onCheckboxChanged(true);
-                      });
-                    } else {
-                      _completionTimer?.cancel();
-                    }
-                  },
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  activeColor: Colors.blueAccent,
-                  checkColor: Colors.white,
+                  } else {
+                    _completionTimer?.cancel();
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
                 ),
+                activeColor: Colors.blueAccent,
+                checkColor: Colors.white,
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,57 +263,52 @@ class _ReminderItemState extends State<ReminderItem> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // เพิ่มไอคอนและข้อความ Expiration Date
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.schedule, color: Colors.red),
-                        const SizedBox(width: 8),
+                        const Icon(Icons.schedule, color: Colors.red, size: 16),
+                        const SizedBox(width: 4),
                         Text(
-                          'Expiration Date: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(widget.expirationDate))}',
+                          'Expiration: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(widget.expirationDate))}',
                           style: const TextStyle(
-                            color: Colors.red, // สีแดงเพื่อเน้น
-                            fontWeight: FontWeight.bold, // ทำให้ตัวหนา
-                            fontSize: 15, // ขนาดฟอนต์ใหญ่ขึ้น
+                            color: Colors.red,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                        if (widget.status == 'overdue') ...[
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Overdue',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                    // Display overdue status in red if applicable
-                    if (widget.status == 'overdue')
-                      Text(
-                        'Overdue',
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.grey[700],
-                    radius: 18,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.edit,
-                        color: Colors.blueAccent,
-                        size: 16,
-                      ),
-                      onPressed: widget.onEdit,
+                  IconButton(
+                    icon: const Icon(
+                      Icons.edit,
+                      size: 18,
+                      color: Colors.blueAccent,
                     ),
+                    onPressed: widget.onEdit,
+                    tooltip: 'Edit',
                   ),
-                  const SizedBox(height: 8),
-                  CircleAvatar(
-                    backgroundColor: Colors.grey[700],
-                    radius: 18,
-                    child: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red, size: 16),
-                      onPressed: widget.onDelete,
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                    onPressed: widget.onDelete,
+                    tooltip: 'Delete',
                   ),
                 ],
               ),
