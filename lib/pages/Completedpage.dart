@@ -78,7 +78,9 @@ class _CompletedPageState extends State<CompletedPage> {
           children: [
             Text(
               'Completed Reminder:',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(

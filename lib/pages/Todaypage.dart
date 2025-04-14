@@ -115,10 +115,9 @@ class _TodayPageState extends State<TodayPage> {
           children: [
             Text(
               'Reminder for Today:',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(
