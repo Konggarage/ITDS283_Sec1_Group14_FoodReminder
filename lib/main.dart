@@ -90,11 +90,11 @@ class MyApp extends StatelessWidget {
               titleMedium: TextStyle(color: Colors.white),
               titleLarge: TextStyle(color: Colors.white), // 👈 เพิ่มบรรทัดนี้
             ),
-            cardTheme: const CardTheme(
-              color: Color(0xFF1E1E1E),
-              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              elevation: 4,
-            ),
+            cardTheme: const CardThemeData(
+  color: Color(0xFF1E1E1E),
+  elevation: 4,
+),
+
             listTileTheme: const ListTileThemeData(
               textColor: Colors.white,
               iconColor: Colors.white,

@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/kongphopkaochot/Desktop/Mahidol-University/year2/term2/midterm/mobile_application/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/kongphopkaochot/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/kongphopkaochot/Desktop/ITDS283_Sec1_Group14_FoodReminder/android/app/.cxx/Debug/1u42l4m3/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/kongphopkaochot/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/kongphopkaochot/Desktop/ITDS283_Sec1_Group14_FoodReminder/android/app/.cxx/Debug/1u42l4m3/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
