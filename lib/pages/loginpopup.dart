@@ -76,11 +76,17 @@ class _LoginPopupState extends State<LoginPopup> {
           const SizedBox(height: 12),
           TextField(
             decoration: const InputDecoration(labelText: "What's your name"),
+            style: const TextStyle(
+              color: Colors.black, // ✅ สีตัวอักษรที่พิมพ์
+            ),
             onChanged: (value) => name = value,
           ),
           const SizedBox(height: 8),
           TextField(
             decoration: const InputDecoration(labelText: "Phone number"),
+            style: const TextStyle(
+              color: Colors.black, // ✅ สีตัวอักษรที่พิมพ์
+            ),
             keyboardType: TextInputType.phone,
             maxLength: 10,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],

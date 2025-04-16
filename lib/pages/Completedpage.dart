@@ -102,6 +102,7 @@ class _CompletedPageState extends State<CompletedPage> {
                             title: const Text('Confirm Delete'),
                             content: const Text(
                               'Are you sure you want to delete this reminder?',
+                              style: TextStyle(color: Colors.black),
                             ),
                             actions: [
                               TextButton(
@@ -173,7 +174,11 @@ class CompletedReminderItem extends StatelessWidget {
           '$date $time',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14),
         ),
-        trailing: Icon(Icons.delete, color: Colors.red),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: onDelete,
+          tooltip: 'Delete',
+        ),
       ),
     );
   }

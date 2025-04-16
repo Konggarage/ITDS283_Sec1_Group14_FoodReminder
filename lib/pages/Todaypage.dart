@@ -200,14 +200,23 @@ class ReminderItem extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child:
                 constraints.maxWidth < 400
-                    ? Column(
+                    ? Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildCheckbox(),
-                        const SizedBox(height: 12),
-                        _buildTitle(context),
-                        const SizedBox(height: 6),
-                        _buildExpirationDate(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildTitle(context),
+                              const SizedBox(height: 6),
+                              _buildExpirationDate(),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildEditDeleteButtons(),
                       ],
                     )
                     : Row(

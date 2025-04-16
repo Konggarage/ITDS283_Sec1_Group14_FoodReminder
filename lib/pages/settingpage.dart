@@ -79,14 +79,17 @@ class _SettingpageState extends State<Settingpage> {
               children: [
                 const Text(
                   '“ Are you sure you want to delete your account? ”',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 const Text(
                   'This action is irreversible, and all your data will be permanently lost.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.black),
                 ),
                 const SizedBox(height: 20),
                 Row(

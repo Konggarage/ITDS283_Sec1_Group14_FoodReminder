@@ -76,7 +76,10 @@ class _AllPageState extends State<AllPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this reminder?'),
+          content: const Text(
+            'Are you sure you want to delete this reminder?',
+            style: TextStyle(color: Colors.black),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -264,29 +267,39 @@ class _ReminderItemState extends State<ReminderItem> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.schedule, color: Colors.red, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Expiration: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(widget.expirationDate))}',
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (widget.status == 'overdue') ...[
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Overdue',
-                            style: TextStyle(
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.schedule,
                               color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Expiration: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(widget.expirationDate))}',
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (widget.status == 'overdue')
+                          const Padding(
+                            padding: EdgeInsets.only(top: 2),
+                            child: Text(
+                              'Overdue',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
-                        ],
                       ],
                     ),
                   ],
