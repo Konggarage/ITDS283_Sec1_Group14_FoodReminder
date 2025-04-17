@@ -347,27 +347,6 @@ class _SettingpageState extends State<Settingpage> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () async {
-                  await NotificationService.scheduleNotification(
-                    id: 999,
-                    title: 'ทดสอบแจ้งเตือน',
-                    body: 'นี่คือการแจ้งเตือนจากระบบ!',
-                    scheduledTime: DateTime.now().add(
-                      const Duration(seconds: 5),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text(
-                  '🔔 ทดสอบแจ้งเตือน',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
                   final enableNoti =
                       prefs.getBool('enableNotification') ?? true;
