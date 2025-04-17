@@ -1,9 +1,7 @@
 import 'package:intl/intl.dart';
 
 String calculateExpirationDate(String date, String category) {
-  final DateTime inputDate = DateTime.parse(
-    date,
-  ); // แปลงวันที่ที่ผู้ใช้กรอกเป็น DateTime
+  final DateTime inputDate = DateTime.parse(date);
 
   final expirationMap = {
     'Meat & Fish': 5,
@@ -17,11 +15,10 @@ String calculateExpirationDate(String date, String category) {
 
   final daysToAdd = expirationMap[category] ?? 7;
 
-  final DateTime expirationDate = inputDate.add(
-    Duration(days: daysToAdd),
-  ); // เพิ่มจำนวนวัน
-  final DateFormat formatter = DateFormat('yyyy-MM-dd'); // ฟอร์แมตวันที่
-  return formatter.format(expirationDate); // คืนค่าผลลัพธ์ในรูปแบบที่ต้องการ
+  final DateTime expirationDate = inputDate.add(Duration(days: daysToAdd));
+
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
+  return formatter.format(expirationDate);
 }
 
 // ฟังก์ชันสำหรับเช็คว่า input ถูกกรอกครบทุกช่อง

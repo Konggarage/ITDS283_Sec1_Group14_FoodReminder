@@ -6,6 +6,7 @@ import 'package:myapp/main.dart'; // สำหรับ ScaffoldExample
 import 'package:myapp/Fooddatabase.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:myapp/service/notification_service.dart';
 
 class Settingpage extends StatefulWidget {
   const Settingpage({super.key});
@@ -31,7 +32,7 @@ class _SettingpageState extends State<Settingpage> {
     final prefs = await SharedPreferences.getInstance();
     final loadedName = prefs.getString('username') ?? '';
     final loadedPhone = prefs.getString('phone') ?? '';
-    final reminder = prefs.getBool('expirationAlertsEnabled') ?? true;
+    final reminder = prefs.getBool('enableNotification') ?? true;
     final isDark = prefs.getBool('isDarkModeEnabled') ?? true;
 
     setState(() {
@@ -309,6 +310,88 @@ class _SettingpageState extends State<Settingpage> {
                       activeColor: Colors.amber,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Enable Notifications",
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    Switch(
+                      value: isReminderOn,
+                      onChanged: (val) async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('enableNotification', val);
+                        setState(() {
+                          isReminderOn = val;
+                        });
+
+                        if (!val) {
+                          await NotificationService.cancelAll();
+                        }
+                      },
+                      activeColor: Colors.amber,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () async {
+                  await NotificationService.scheduleNotification(
+                    id: 999,
+                    title: 'ทดสอบแจ้งเตือน',
+                    body: 'นี่คือการแจ้งเตือนจากระบบ!',
+                    scheduledTime: DateTime.now().add(
+                      const Duration(seconds: 5),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                child: const Text(
+                  '🔔 ทดสอบแจ้งเตือน',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final enableNoti =
+                      prefs.getBool('enableNotification') ?? true;
+
+                  if (enableNoti) {
+                    await NotificationService.scheduleNotification(
+                      id: 998,
+                      title: '⚠️ ใกล้หมดอายุ',
+                      body: 'นี่คือการแจ้งเตือนทดสอบแบบเร็ว (10 วินาที)',
+                      scheduledTime: DateTime.now().add(
+                        const Duration(seconds: 10),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey,
+                ),
+                child: const Text(
+                  '🧪 ทดสอบแจ้งเตือนแบบเร็ว (10 วิ)',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),

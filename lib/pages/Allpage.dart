@@ -4,6 +4,7 @@ import 'dart:async'; // เพิ่มการนำเข้า
 import 'package:myapp/pages/EditReminderPage.dart'; // อย่าลืมนำเข้า EditReminderPage
 import 'package:myapp/pages/Detaillpage.dart';
 import 'package:intl/intl.dart'; // เพิ่มการนำเข้า intl
+import 'package:myapp/service/notification_service.dart';
 
 class AllPage extends StatefulWidget {
   const AllPage({super.key});
@@ -51,6 +52,16 @@ class _AllPageState extends State<AllPage> {
               .where((reminder) => reminder['status'] != 'completed')
               .toList();
     });
+    for (final reminder in reminders) {
+      if (reminder['status'] != 'completed') {
+        print('[ALLPAGE] Scheduling noti for ${reminder['reminder']}');
+        await NotificationService.scheduleMultipleNotis(
+          id: reminder['id'],
+          title: 'Reminder: ${reminder['reminder']}',
+          expirationDate: DateTime.parse(reminder['expirationDate']),
+        );
+      }
+    }
   }
 
   // ฟังก์ชันที่ใช้ในการเปลี่ยนสถานะไปที่ "completed"
@@ -66,6 +77,9 @@ class _AllPageState extends State<AllPage> {
   // ฟังก์ชันลบ reminder
   void _deleteReminder(int id) async {
     await DatabaseHelper.instance.deleteReminder(id);
+    await NotificationService.cancelMultiple(
+      id,
+    ); // ⬅️ เพิ่มบรรทัดนี้เพื่อยกเลิก noti ที่เกี่ยวข้อง
     _fetchAllReminders(); // รีเฟรชข้อมูลทั้งหมด
   }
 

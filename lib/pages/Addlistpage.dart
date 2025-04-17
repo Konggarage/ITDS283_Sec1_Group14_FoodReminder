@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // นำเข้า image_picker
 import 'dart:io'; // สำหรับจัดการกับไฟล์รูป
 import 'package:myapp/Fooddatabase.dart'; // เชื่อมต่อฐานข้อมูล
-import 'package:myapp/func/func.dart'; // นำเข้า func.dart ที่คำนวณวันหมดอายุ
+import 'package:myapp/service/func.dart'; // นำเข้า func.dart ที่คำนวณวันหมดอายุ
 import 'package:intl/intl.dart'; // นำเข้า intl สำหรับการจัดการวันที่
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:myapp/service/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FoodReminderPage extends StatefulWidget {
   const FoodReminderPage({super.key});
@@ -130,7 +132,6 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
 
     // คำนวณวันหมดอายุ
     String expirationDateCalculated = calculateExpirationDate(date, category);
-
     // เก็บวันหมดอายุที่คำนวณแล้ว
     setState(() {
       expirationDate = expirationDateCalculated;
@@ -148,10 +149,20 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
 
     // ตรวจสอบว่า DatabaseHelper ทำงานได้ไหม
     try {
-      await DatabaseHelper.instance.insertReminder(
-        row,
-      ); // บันทึกข้อมูลลงฐานข้อมูล
-      print('Saved reminder: $row'); // พิมพ์ข้อมูลใน terminal เพื่อตรวจสอบ
+      final newId = await DatabaseHelper.instance.insertReminder(row);
+      print('Saved reminder: $row');
+
+      // ✅ ตั้ง noti ถ้าเปิดแจ้งเตือนไว้
+      final prefs = await SharedPreferences.getInstance();
+      final enableNoti = prefs.getBool('enableNotification') ?? true;
+
+      if (enableNoti) {
+        await NotificationService.scheduleMultipleNotis(
+          id: newId,
+          title: 'Reminder: $reminder',
+          expirationDate: DateTime.parse(expirationDateCalculated),
+        );
+      } // พิมพ์ข้อมูลใน terminal เพื่อตรวจสอบ
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

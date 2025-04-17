@@ -3,6 +3,7 @@ import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import Databa
 import 'package:intl/intl.dart';
 import 'package:myapp/pages/EditReminderPage.dart'; // เพิ่มการนำเข้า EditReminderPage
 import 'package:myapp/pages/Detaillpage.dart';
+import 'package:myapp/service/notification_service.dart';
 import 'dart:async';
 
 class TodayPage extends StatefulWidget {
@@ -40,6 +41,7 @@ class _TodayPageState extends State<TodayPage> {
 
   void _deleteReminder(int id) async {
     await DatabaseHelper.instance.deleteReminder(id);
+    await NotificationService.cancelMultiple(id); // ⬅️ เพิ่มเพื่อยกเลิก noti
     _fetchTodayReminders(); // รีเฟรชข้อมูลในหน้า Today
   }
 

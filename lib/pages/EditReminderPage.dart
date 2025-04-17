@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/Fooddatabase.dart'; // อย่าลืม import DatabaseHelper
+import 'package:myapp/Fooddatabase.dart';
+import 'package:myapp/service/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class EditReminderPage extends StatefulWidget {
-  final int reminderId; // ใช้เพื่อรับ ID ของ reminder ที่จะถูกแก้ไข
-
+  final int reminderId;
   const EditReminderPage({required this.reminderId, super.key});
 
   @override
@@ -16,9 +18,8 @@ class _EditReminderPageState extends State<EditReminderPage> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _expirationDateController =
-      TextEditingController(); // เพิ่มตัวควบคุมสำหรับ Expiration Date
-  String _expirationDate =
-      ''; // เปลี่ยนเป็น String และกำหนดให้เป็นค่าว่างหากไม่มีข้อมูล
+      TextEditingController();
+  String _expirationDate = '';
 
   @override
   void initState() {
@@ -31,19 +32,16 @@ class _EditReminderPageState extends State<EditReminderPage> {
       final reminder = await DatabaseHelper.instance.fetchReminderById(
         widget.reminderId,
       );
-
       _titleController.text = reminder['reminder'];
       _timeController.text = reminder['time'];
       _dateController.text = reminder['date'];
       _categoryController.text = reminder['category'];
 
-      // คำนวณ Expiration Date ตามวันที่และหมวดหมู่ที่บันทึกไว้
       _expirationDate = calculateExpirationDate(
         reminder['date'],
         reminder['category'],
       );
-      _expirationDateController.text =
-          _expirationDate; // กรอกค่า Expiration Date ที่คำนวณแล้ว
+      _expirationDateController.text = _expirationDate;
     } catch (e) {
       print("Error fetching reminder: $e");
     }
@@ -52,17 +50,13 @@ class _EditReminderPageState extends State<EditReminderPage> {
   String calculateExpirationDate(String date, String category) {
     DateTime selectedDate = DateTime.parse(date);
     int daysToAdd = 0;
-
     if (category == 'Meat & Fish') {
       daysToAdd = 5;
     } else if (category == 'Vegetables & Fruits') {
       daysToAdd = 3;
     }
-
     DateTime expirationDate = selectedDate.add(Duration(days: daysToAdd));
-    return expirationDate.toString().split(
-      ' ',
-    )[0]; // แสดงวันที่ในรูปแบบ 'yyyy-MM-dd'
+    return DateFormat('yyyy-MM-dd').format(expirationDate);
   }
 
   @override
@@ -100,13 +94,13 @@ class _EditReminderPageState extends State<EditReminderPage> {
               controller: _timeController,
               readOnly: true,
               onTap: () async {
-                TimeOfDay? selectedTimeOfDay = await showTimePicker(
+                TimeOfDay? selectedTime = await showTimePicker(
                   context: context,
                   initialTime: TimeOfDay.now(),
                 );
-                if (selectedTimeOfDay != null) {
+                if (selectedTime != null) {
                   setState(() {
-                    _timeController.text = selectedTimeOfDay.format(context);
+                    _timeController.text = selectedTime.format(context);
                   });
                 }
               },
@@ -116,38 +110,35 @@ class _EditReminderPageState extends State<EditReminderPage> {
               ),
             ),
             const SizedBox(height: 16),
-            // ให้ผู้ใช้เลือกวันที่ใน DatePicker
             TextField(
               controller: _dateController,
               readOnly: true,
               onTap: () async {
-                DateTime? selectedDateTime = await showDatePicker(
+                DateTime? selectedDate = await showDatePicker(
                   context: context,
                   initialDate: DateTime.now(),
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2101),
                 );
-                if (selectedDateTime != null) {
+                if (selectedDate != null) {
                   setState(() {
-                    _dateController.text =
-                        selectedDateTime.toLocal().toString().split(' ')[0];
-                    // คำนวณ Expiration Date ใหม่เมื่อวันที่ถูกเลือก
+                    _dateController.text = DateFormat(
+                      'yyyy-MM-dd',
+                    ).format(selectedDate);
                     _expirationDate = calculateExpirationDate(
                       _dateController.text,
                       _categoryController.text,
                     );
-                    _expirationDateController.text =
-                        _expirationDate; // อัปเดต Expiration Date ที่คำนวณใหม่
+                    _expirationDateController.text = _expirationDate;
                   });
                 }
               },
               decoration: const InputDecoration(
-                labelText: 'Date', // เปลี่ยนจาก Date เป็น Expiration Date
+                labelText: 'Date',
                 labelStyle: TextStyle(color: Colors.grey),
               ),
             ),
             const SizedBox(height: 20),
-            // เพิ่มให้ผู้ใช้กรอก Expiration Date หรือใช้การคำนวณ
             TextField(
               controller: _expirationDateController,
               readOnly: true,
@@ -160,8 +151,9 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 );
                 if (selectedExpirationDate != null) {
                   setState(() {
-                    _expirationDate =
-                        selectedExpirationDate.toString().split(' ')[0];
+                    _expirationDate = DateFormat(
+                      'yyyy-MM-dd',
+                    ).format(selectedExpirationDate);
                     _expirationDateController.text = _expirationDate;
                   });
                 }
@@ -174,7 +166,6 @@ class _EditReminderPageState extends State<EditReminderPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // ตรวจสอบว่า user กรอกค่า Expiration Date เองหรือไม่
                 if (_expirationDateController.text.isEmpty) {
                   _expirationDate = calculateExpirationDate(
                     _dateController.text,
@@ -183,7 +174,6 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 } else {
                   _expirationDate = _expirationDateController.text;
                 }
-
                 _saveReminder();
               },
               child: const Text('Save'),
@@ -195,26 +185,63 @@ class _EditReminderPageState extends State<EditReminderPage> {
   }
 
   void _saveReminder() async {
+    if (_titleController.text.isEmpty ||
+        _timeController.text.isEmpty ||
+        _dateController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final expiration = DateTime.tryParse(_expirationDate);
+    if (expiration != null && expiration.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Expiration date must be in the future.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final updatedReminder = {
       'id': widget.reminderId,
       'reminder': _titleController.text,
       'time': _timeController.text,
       'date': _dateController.text,
+      'expirationDate': _expirationDate,
     };
-
-    updatedReminder['expirationDate'] = _expirationDate;
 
     try {
       await DatabaseHelper.instance.updateReminder(
         widget.reminderId,
         updatedReminder,
       );
-      Navigator.pop(context, true); // ส่งค่า true เพื่อบอกว่ามีการอัปเดต
+
+      final prefs = await SharedPreferences.getInstance();
+      final enableNoti = prefs.getBool('enableNotification') ?? true;
+
+      if (enableNoti) {
+        await NotificationService.cancelMultiple(widget.reminderId);
+        await NotificationService.scheduleMultipleNotis(
+          id: widget.reminderId,
+          title: 'Reminder: ${_titleController.text}',
+          expirationDate: DateTime.parse(_expirationDate),
+        );
+      }
+
+      Navigator.pop(context, true);
     } catch (e) {
       print("Error updating reminder: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to update reminder'),
+        const SnackBar(
+          content: Text('Failed to update reminder'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),

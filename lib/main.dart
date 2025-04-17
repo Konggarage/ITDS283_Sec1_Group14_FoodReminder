@@ -5,9 +5,11 @@ import 'package:myapp/pages/FoodRecommendationPage.dart';
 import 'package:myapp/pages/analyze.dart';
 import 'package:myapp/pages/settingpage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myapp/service/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.init();
   final prefs = await SharedPreferences.getInstance();
   final isDark =
       prefs.getBool('isDarkModeEnabled') ?? true; // ✅ default เป็น dark
@@ -91,9 +93,9 @@ class MyApp extends StatelessWidget {
               titleLarge: TextStyle(color: Colors.white), // 👈 เพิ่มบรรทัดนี้
             ),
             cardTheme: const CardThemeData(
-  color: Color(0xFF1E1E1E),
-  elevation: 4,
-),
+              color: Color(0xFF1E1E1E),
+              elevation: 4,
+            ),
 
             listTileTheme: const ListTileThemeData(
               textColor: Colors.white,
