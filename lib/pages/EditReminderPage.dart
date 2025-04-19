@@ -146,7 +146,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 DateTime? selectedExpirationDate = await showDatePicker(
                   context: context,
                   initialDate: DateTime.now(),
-                  firstDate: DateTime(2000),
+                  firstDate: DateTime.now(),
                   lastDate: DateTime(2101),
                 );
                 if (selectedExpirationDate != null) {
@@ -174,6 +174,49 @@ class _EditReminderPageState extends State<EditReminderPage> {
                 } else {
                   _expirationDate = _expirationDateController.text;
                 }
+
+                // ตรวจสอบว่า Expiration Date ไม่ต่ำกว่าวันนี้
+                try {
+                  DateTime expiration = DateTime.parse(_expirationDate);
+                  if (expiration.isBefore(
+                    DateTime.now().subtract(const Duration(days: 1)),
+                  )) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Expiration date must be in the future or today.',
+                        ),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    return;
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Invalid Expiration Date format.'),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+
+                // ตรวจสอบว่า Title, Time และ Date ไม่เป็นค่าว่าง
+                if (_titleController.text.isEmpty ||
+                    _timeController.text.isEmpty ||
+                    _dateController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please fill in all fields.'),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+
                 _saveReminder();
               },
               child: const Text('Save'),
@@ -198,11 +241,11 @@ class _EditReminderPageState extends State<EditReminderPage> {
       return;
     }
 
-    final expiration = DateTime.tryParse(_expirationDate);
-    if (expiration != null && expiration.isBefore(DateTime.now())) {
+    final expiration = DateTime.parse(_expirationDate);
+    if (expiration.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Expiration date must be in the future.'),
+          content: Text('Expiration date must be in the future or today.'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),

@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/mara/Development/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/mara/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/mara/Desktop/ITDS283_Sec1_Group14_FoodReminder-1/android/app/.cxx/Debug/1g6gt566/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/mara/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/mara/Desktop/ITDS283_Sec1_Group14_FoodReminder-1/android/app/.cxx/Debug/1g6gt566/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

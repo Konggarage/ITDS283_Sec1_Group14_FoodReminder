@@ -108,6 +108,91 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
   }
 
   // ฟังก์ชันสำหรับเพิ่มข้อมูลลงในฐานข้อมูล
+  // void _addReminder() async {
+  //   final reminder = reminderController.text;
+  //   final category = selectedCategory;
+  //   final date = selectedDate;
+  //   final time = selectedTime;
+
+  //   if (reminder.isEmpty || category.isEmpty || date.isEmpty || time.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(
+  //           'Please fill all required fields',
+  //           style: Theme.of(
+  //             context,
+  //           ).textTheme.bodyLarge?.copyWith(color: Colors.white),
+  //         ),
+  //         backgroundColor: Colors.red,
+  //         behavior: SnackBarBehavior.floating,
+  //       ),
+  //     );
+  //     return;
+  //   }
+
+  //   // คำนวณวันหมดอายุ
+  //   String expirationDateCalculated = calculateExpirationDate(date, category);
+  //   // เก็บวันหมดอายุที่คำนวณแล้ว
+  //   setState(() {
+  //     expirationDate = expirationDateCalculated;
+  //   });
+
+  //   Map<String, dynamic> row = {
+  //     'reminder': reminder,
+  //     'category': category,
+  //     'date': date,
+  //     'time': time,
+  //     'imagePath': uploadedImage,
+  //     'status': 'pending',
+  //     'expirationDate':
+  //         expirationDateCalculated, // บันทึกวันหมดอายุที่คำนวณแล้วในรูปแบบ yyyy-MM-dd
+  //   };
+
+  //   // ตรวจสอบว่า DatabaseHelper ทำงานได้ไหม
+  //   try {
+  //     final newId = await DatabaseHelper.instance.insertReminder(row);
+  //     print('Saved reminder: $row');
+
+  //     // ✅ ตั้ง noti ถ้าเปิดแจ้งเตือนไว้
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final enableNoti = prefs.getBool('enableNotification') ?? true;
+
+  //     if (enableNoti) {
+  //       await NotificationService.scheduleMultipleNotis(
+  //         id: newId,
+  //         title: 'Reminder: $reminder',
+  //         expirationDate: DateTime.parse(expirationDateCalculated),
+  //       );
+  //     } // พิมพ์ข้อมูลใน terminal เพื่อตรวจสอบ
+
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: const Text('Reminder saved successfully!'),
+  //         backgroundColor: Colors.green,
+  //         behavior: SnackBarBehavior.floating,
+  //       ),
+  //     );
+
+  //     // รีเซ็ตฟอร์มหลังจากบันทึก
+  //     setState(() {
+  //       reminderController.clear();
+  //       selectedCategory = '';
+  //       selectedDate = '';
+  //       selectedTime = '';
+  //       uploadedImage = '';
+  //       expirationDate = ''; // รีเซ็ตวันหมดอายุ
+  //     });
+  //   } catch (e) {
+  //     print('Error saving reminder: $e'); // พิมพ์ข้อผิดพลาดใน terminal
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: const Text('Failed to save reminder'),
+  //         backgroundColor: Colors.red,
+  //         behavior: SnackBarBehavior.floating,
+  //       ),
+  //     );
+  //   }
+  // }
   void _addReminder() async {
     final reminder = reminderController.text;
     final category = selectedCategory;
@@ -130,9 +215,13 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
       return;
     }
 
-    // คำนวณวันหมดอายุ
+    // คำนวณวันหมดอายุจากวันที่ที่ผู้ใช้เลือก
     String expirationDateCalculated = calculateExpirationDate(date, category);
-    // เก็บวันหมดอายุที่คำนวณแล้ว
+
+    // ตรวจสอบว่า expirationDateCalculated ถูกต้องหรือไม่
+    print("Calculated Expiration Date: $expirationDateCalculated");
+
+    // เก็บวันหมดอายุที่คำนวณแล้วใน state
     setState(() {
       expirationDate = expirationDateCalculated;
     });
@@ -144,15 +233,14 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
       'time': time,
       'imagePath': uploadedImage,
       'status': 'pending',
-      'expirationDate': expirationDate, // บันทึกวันหมดอายุ
+      'expirationDate': expirationDate, // ใช้ expirationDate ที่คำนวณแล้ว
     };
 
-    // ตรวจสอบว่า DatabaseHelper ทำงานได้ไหม
     try {
       final newId = await DatabaseHelper.instance.insertReminder(row);
       print('Saved reminder: $row');
 
-      // ✅ ตั้ง noti ถ้าเปิดแจ้งเตือนไว้
+      // ตั้ง noti ถ้าเปิดแจ้งเตือนไว้
       final prefs = await SharedPreferences.getInstance();
       final enableNoti = prefs.getBool('enableNotification') ?? true;
 
@@ -162,7 +250,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
           title: 'Reminder: $reminder',
           expirationDate: DateTime.parse(expirationDateCalculated),
         );
-      } // พิมพ์ข้อมูลใน terminal เพื่อตรวจสอบ
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -182,7 +270,7 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
         expirationDate = ''; // รีเซ็ตวันหมดอายุ
       });
     } catch (e) {
-      print('Error saving reminder: $e'); // พิมพ์ข้อผิดพลาดใน terminal
+      print('Error saving reminder: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Failed to save reminder'),
@@ -331,13 +419,22 @@ class _FoodReminderPageState extends State<FoodReminderPage> {
                   );
                   if (selectedDateTime != null) {
                     setState(() {
-                      selectedDate =
-                          selectedDateTime.toLocal().toString().split(' ')[0];
+                      selectedDate = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(selectedDateTime);
                       if (selectedCategory.isNotEmpty) {
                         expirationDate = calculateExpirationDate(
                           selectedDate,
                           selectedCategory,
                         );
+                        DateTime expDate = DateTime.parse(expirationDate);
+                        DateTime now = DateTime.now();
+                        if (expDate.isBefore(now)) {
+                          expDate = DateTime(now.year, now.month, now.day);
+                          expirationDate = DateFormat(
+                            'yyyy-MM-dd',
+                          ).format(expDate);
+                        }
                       }
                     });
                   }

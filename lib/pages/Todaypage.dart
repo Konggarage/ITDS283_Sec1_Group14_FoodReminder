@@ -29,14 +29,20 @@ class _TodayPageState extends State<TodayPage> {
     ).format(DateTime.now()); // วันที่ปัจจุบัน
     final allReminders = await DatabaseHelper.instance.fetchReminders();
 
+    print('All reminders: $allReminders'); // เพิ่มการพิมพ์ข้อมูล
     setState(() {
       reminders =
           allReminders.where((reminder) {
-            // ตรวจสอบว่า expirationDate ตรงกับวันนี้
-            final expirationDate = reminder['expirationDate'];
+            // แปลง expirationDate ให้เป็นวันที่ที่ไม่มีเวลา (ปี-เดือน-วัน)
+            final expirationDate = DateFormat(
+              'yyyy-MM-dd',
+            ).format(DateTime.parse(reminder['expirationDate']));
+            print('Reminder expirationDate: $expirationDate'); // ดูค่าที่ดึงมา
             return expirationDate == today && reminder['status'] != 'completed';
           }).toList();
     });
+
+    print('Filtered reminders: $reminders'); // เพิ่มการพิมพ์ข้อมูลที่กรองแล้ว
   }
 
   void _deleteReminder(int id) async {
@@ -270,14 +276,17 @@ class ReminderItem extends StatelessWidget {
   }
 
   Widget _buildExpirationDate() {
+    final expirationDateFormatted = DateFormat(
+      'yyyy-MM-dd',
+    ).format(DateTime.parse(expirationDate));
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Row(
         children: [
-          const Icon(Icons.schedule, color: Colors.red, size: 18),
+          const Icon(Icons.schedule, color: Colors.red, size: 14),
           const SizedBox(width: 6),
           Text(
-            'Expiration Date: $expirationDate',
+            'Expiration: $expirationDateFormatted',
             style: const TextStyle(
               color: Colors.red,
               fontWeight: FontWeight.bold,
