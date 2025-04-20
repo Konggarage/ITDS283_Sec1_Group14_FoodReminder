@@ -1,0 +1,28 @@
+{
+  "buildFiles": [
+    "/Users/mara/Development/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/mara/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/mara/Desktop/main mobi/ITDS283_Sec1_Group14_FoodReminder/android/app/.cxx/Debug/a3m6u625/x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/mara/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/mara/Desktop/main mobi/ITDS283_Sec1_Group14_FoodReminder/android/app/.cxx/Debug/a3m6u625/x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {},
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/Users/mara/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/Users/mara/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": []
+}

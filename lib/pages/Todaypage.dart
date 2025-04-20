@@ -15,6 +15,7 @@ class TodayPage extends StatefulWidget {
 
 class _TodayPageState extends State<TodayPage> {
   List<Map<String, dynamic>> reminders = [];
+  List<bool> isChecked = []; // ตัวแปรเก็บสถานะของ Checkbox
 
   @override
   void initState() {
@@ -40,6 +41,10 @@ class _TodayPageState extends State<TodayPage> {
             print('Reminder expirationDate: $expirationDate'); // ดูค่าที่ดึงมา
             return expirationDate == today && reminder['status'] != 'completed';
           }).toList();
+      isChecked = List.generate(
+        reminders.length,
+        (index) => false,
+      ); // กำหนดสถานะเริ่มต้นของ Checkbox
     });
 
     print('Filtered reminders: $reminders'); // เพิ่มการพิมพ์ข้อมูลที่กรองแล้ว
@@ -105,6 +110,12 @@ class _TodayPageState extends State<TodayPage> {
     }
   }
 
+  void _toggleReminderStatus(int id, String currentStatus) async {
+    String newStatus = currentStatus == 'completed' ? 'pending' : 'completed';
+    await DatabaseHelper.instance.updateReminderStatus(id, newStatus);
+    _fetchTodayReminders(); // รีเฟรชข้อมูลหลังจากเปลี่ยนสถานะ
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,12 +158,18 @@ class _TodayPageState extends State<TodayPage> {
                       expirationDate:
                           reminder['expirationDate'], // เพิ่ม expirationDate
                       status: reminder['status'],
-                      onCheckboxChanged: (isChecked) {
-                        if (isChecked != null && isChecked) {
-                          // _toggleReminderStatus(
-                          //   reminder['id'],
-                          //   reminder['status'],
-                          // );
+                      isChecked: isChecked[index], // ใช้ตัวแปร isChecked
+                      onCheckboxChanged: (bool? value) {
+                        setState(() {
+                          this.isChecked[index] = value ?? false;
+                        });
+                        if (value == true) {
+                          Timer(const Duration(seconds: 3), () {
+                            _toggleReminderStatus(
+                              reminder['id'],
+                              reminder['status'],
+                            );
+                          });
                         }
                       },
                       onEdit: () => _navigateToEditReminderPage(reminder['id']),
@@ -177,6 +194,7 @@ class ReminderItem extends StatelessWidget {
   final String date;
   final String expirationDate;
   final String status;
+  final bool isChecked; // เพิ่มตัวแปร isChecked
   final ValueChanged<bool?> onCheckboxChanged; // รับค่าเป็น bool?
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -188,6 +206,7 @@ class ReminderItem extends StatelessWidget {
     required this.date,
     required this.expirationDate,
     required this.status,
+    required this.isChecked, // เพิ่มตัวแปร isChecked
     required this.onCheckboxChanged,
     required this.onEdit,
     required this.onDelete,
@@ -256,7 +275,7 @@ class ReminderItem extends StatelessWidget {
     return Transform.scale(
       scale: 1.2,
       child: Checkbox(
-        value: false,
+        value: isChecked, // ใช้ตัวแปร isChecked
         onChanged: (bool? value) {
           onCheckboxChanged(value); // ส่งค่า nullable bool
         },
